@@ -3,74 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Agency | Digital Services</title>
+    <title>Cyber Portal | Client Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+        :root { --bg: #f8fafc; --card: #ffffff; --primary: #0f172a; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); padding: 20px; }
         .container { max-width: 480px; margin: 0 auto; }
-        
-        .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
-        .pulse { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; display: inline-block; animation: blink 1.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        
-        h1 { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; box-sizing: border-box; font-size: 15px; }
-        .btn { width: 100%; padding: 16px; background: #0f172a; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn:hover { background: #1e293b; transform: translateY(-2px); }
-        
-        .badge-row { display: flex; gap: 10px; margin-bottom: 20px; }
-        .badge { background: #e2e8f0; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .service-list { font-size: 14px; line-height: 1.6; }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
+        .total-box { font-size: 20px; font-weight: 800; text-align: center; margin: 15px 0; color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <span style="font-weight: 600; font-size: 13px;"><span class="pulse"></span> LIVE AGENT</span>
-            <button onclick="document.body.style.filter = 'invert(1)'" style="border:none; background:#f1f5f9; cursor:pointer; padding:5px 10px; border-radius:20px; font-size:11px;">Dark/Light</button>
-        </div>
-        <h1>Cyber Services</h1>
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">Fast government portal assistance.</p>
-        
-        <input type="text" id="clientName" placeholder="Full Name or ID Number">
-        <select id="serviceSelect">
-            <option>eCitizen: Phone Number Change</option>
-            <option>SHA: Rate Reduction</option>
-            <option>KRA: Email / PIN Update</option>
-            <option>NTSA: License/Logbook Services</option>
+        <h3>Service Calculator</h3>
+        <select id="serviceSelect" onchange="calculateTotal()">
+            <option value="300">eCitizen Phone Change (300/-)</option>
+            <option value="400">SHA Rate Reduction (400/-)</option>
+            <option value="250">KRA Email/PIN (250/-)</option>
+            <option value="500">NTSA Services (500/-)</option>
         </select>
-        <button class="btn" id="whatsappBtn">Proceed via WhatsApp</button>
-    </div>
-
-    <div class="badge-row">
-        <div class="badge">⚡ 24hr Turnaround</div>
-        <div class="badge">🔒 Data Encrypted</div>
+        <div class="total-box" id="totalDisplay">Total: 300/-</div>
+        <input type="text" id="clientName" placeholder="Enter Full Name">
+        <button class="btn" onclick="sendWhatsApp()">Submit Order</button>
     </div>
 
     <div class="card">
-        <h3 style="margin-top:0;">Service Catalog</h3>
-        <div class="service-list">
-            • <b>eCitizen:</b> Account recovery & phone changes.<br>
-            • <b>SHA:</b> Contribution rate reductions.<br>
-            • <b>KRA:</b> Email/PIN retrieval and tax filing.<br>
-            • <b>NTSA:</b> Ownership searches and transfers.
-        </div>
-        <p style="font-size: 11px; color: #94a3b8; margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-            *Note: If no ID is available, provide full names and ID number.
-        </p>
+        <h3>Order Status Portal</h3>
+        <input type="text" id="trackName" placeholder="Enter Name to Track">
+        <button class="btn" style="background:#2563eb;" onclick="trackStatus()">Check Status</button>
+        <p id="statusResult" style="margin-top:15px; font-weight:600; text-align:center;"></p>
     </div>
 </div>
 
 <script>
-    document.getElementById('whatsappBtn').addEventListener('click', function() {
-        const name = document.getElementById('clientName').value || "Guest";
-        const service = document.getElementById('serviceSelect').value;
-        const url = `https://wa.me/254100733790?text=Hello, I am ${name}. I need assistance with: ${service}.`;
-        window.open(url, '_blank');
-    });
+    function calculateTotal() {
+        const price = document.getElementById('serviceSelect').value;
+        document.getElementById('totalDisplay').innerText = `Total: ${price}/-`;
+    }
+
+    function sendWhatsApp() {
+        const name = document.getElementById('clientName').value;
+        const service = document.getElementById('serviceSelect').options[document.getElementById('serviceSelect').selectedIndex].text;
+        const total = document.getElementById('totalDisplay').innerText;
+        window.open(`https://wa.me/254100733790?text=Order for ${name}. Service: ${service}. ${total}.`, '_blank');
+    }
+
+    function trackStatus() {
+        const name = document.getElementById('trackName').value.toLowerCase();
+        const display = document.getElementById('statusResult');
+        // Simple Logic: You can expand this with a real database later
+        if(name === "") { display.innerText = "Please enter a name."; }
+        else { display.innerText = "Status: Processing..."; display.style.color = "#d97706"; }
+    }
 </script>
 </body>
 </html>
