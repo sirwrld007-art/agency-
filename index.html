@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Agency - Fast KRA & eCitizen Services</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-btn: #0f172a;
+            --primary-btn-text: #ffffff;
+            --accent-bg: #0f172a;
+            --accent-text: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-btn: #38bdf8;
+            --primary-btn-text: #0f172a;
+            --accent-bg: #1e293b;
+            --accent-text: #f8fafc;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .theme-toggle-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--text-muted);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .hero-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0 0 8px 0;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: block;
+            text-decoration: none;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .btn-dark {
+            background-color: var(--primary-btn);
+            color: var(--primary-btn-text);
+        }
+
+        .btn-whatsapp {
+            background-color: #25d366;
+            color: white;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 22px;
+            margin: 32px 0 16px;
+        }
+
+        /* Modern Price List Styling */
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .pricing-table th, .pricing-table td {
+            padding: 14px;
+            text-align: left;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pricing-table th {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 600;
+        }
+
+        .pricing-table td strong {
+            color: #2563eb;
+        }
+
+        /* Checklist Dropdown Styling */
+        .checklist-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .checklist-summary {
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .checklist-content {
+            margin-top: 12px;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        /* Workflow Steps Block */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 14px;
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .step-number {
+            background-color: #2563eb;
+            color: white;
+            font-weight: bold;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .step-text h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+        }
+
+        .step-text p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* FAQ Accordion Styling */
+        .faq-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 14px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: rgba(0,0,0,0.01);
+        }
+
+        .faq-answer {
+            padding: 0 14px 14px 14px;
+            font-size: 13px;
+            color: var(--text-muted);
+            display: none;
+            line-height: 1.5;
+        }
+
+        .why-choose-us {
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+            padding: 30px 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .agent-panel-demo {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 32px;
+        }
+
+        .demo-badge {
+            background-color: #fef3c7;
+            color: #d97706;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .request-card {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            background-color: #dcfce7;
+            color: #15803d;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle-btn" id="themeToggle">🌙 Dark Mode</button>
+
+    <div class="container">
+        <div class="hero-card">
+            <h1>Online Agency</h1>
+            <p class="subtitle">Fast & Reliable eCitizen & KRA Services in Kenya.</p>
+            
+            <div class="form-group">
+                <label for="clientName">Your Name</label>
+                <input type="text" id="clientName" placeholder="e.g. John Kamau">
+            </div>
+
+            <div class="form-group">
+                <label for="serviceSelect">Select Service</label>
+                <select id="serviceSelect">
+                    <option value="KRA PIN Registration">KRA PIN Registration</option>
+                    <option value="KRA Returns Filing">KRA Returns Filing</option>
+                    <option value="eCitizen Account Help">eCitizen Account Help</option>
+                    <option value="Business Registration">Business Registration</option>
+                </select>
+            </div>
+
+            <button class="btn btn-dark" id="getStartedBtn">Get Started</button>
+            <button class="btn btn-whatsapp" id="whatsappBtn">Chat on WhatsApp</button>
+        </div>
+
+        <h2 class="section-title">Requirements Checklist</h2>
+        <div class="checklist-box">
+            <div class="checklist-summary" onclick="toggleDetails('checklistContent')">
+                <span>📋 View Required Documents</span>
+                <span id="checklistArrow">▼</span>
+            </div>
+            <div id="checklistContent" class="checklist-content" style="display: none;">
+                <strong>For KRA Returns:</strong> National ID & your KRA PIN login details.<br>
+                <strong>For KRA PIN Generation:</strong> National ID number & Phone Number details.<br>
+                <strong>For eCitizen Help:</strong> ID Number & access to your email address setup.<br>
+                <strong>For Business Registration:</strong> 3 Proposed unique business names.
+            </div>
+        </div>
+
+        <h2 class="section-title">Our Pricing</h2>
+        <table class="pricing-table">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Time</th>
+                    <th>Price (Ksh)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>KRA Nil Returns</strong></td>
+                    <td>10 mins</td>
+                    <td>150/-</td>
+                </tr>
+                <tr>
+                    <td><strong>KRA Income Returns</strong></td>
+                    <td>25 mins</td>
+                    <td>500/-</td>
+                </tr>
+                <tr>
+                    <td><strong>eCitizen Recovery</strong></td>
+                    <td>30 mins</td>
+                    <td>300/-</td>
+                </tr>
+                <tr>
+                    <td><strong>Business Name Search</strong></td>
+                    <td>24 hrs</td>
+                    <td>600/-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-container">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <div class="step-text">
+                    <h4>Submit Order Details</h4>
+                    <p>Enter your name above, choose your target setup service, and hit "Chat on WhatsApp".</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-text">
+                    <h4>Verification & Payment</h4>
+                    <p>We receive your secure order specifications via WhatsApp and confirm the file parameters before processing via M-Pesa.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-text">
+                    <h4>Instant Execution</h4>
+                    <p>Your official downloads, submission receipts, or account printouts are sent directly back into your chat dashboard.</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">FAQs</h2>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">🔒 Is my information safe?</div>
+            <div class="faq-answer">Absolutely. All credentials and copies provided are strictly handled processing runtime. Data records are fully cleared from workspace history immediately after your payment printout execution.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">💸 When do I make my payment?</div>
+            <div class="faq-answer">Payment is safely requested through Lipa na M-Pesa immediately after our agent checks and validates your application requirements over the WhatsApp console channel.</div>
+        </div>
+
+        <div class="why-choose-us">
+            <h2>Why Choose Us?</h2>
+            <p>Premium execution keeping safety and speed at the center.</p>
+            <h3>⚡ Fast Response</h3>
+            <p>Applications are started within 30 minutes of confirmation.</p>
+        </div>
+
+        <div class="agent-panel-demo">
+            <span class="demo-badge">AGENT PANEL DEMO</span>
+            <h3>Incoming Requests</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;">This tracks submitted jobs dynamically inside your agency.</p>
+            
+            <div class="request-card">
+                <div>
+                    <strong id="demoName">Hj</strong><br>
+                    <span style="font-size: 12px; color: var(--text-muted);">0100733790</span><br>
+                    <span style="color: #2563eb; font-size: 14px;" id="demoService">KRA PIN Registration</span>
+                </div>
+                <span class="status-badge">Paid (M-Pesa)</span>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 Online Agency. All rights reserved.<br>
+            <span style="font-size: 11px; opacity: 0.7;">Disclaimer: Independent consulting platform.</span>
+        </footer>
+    </div>
+
+    <script>
+        // 1. WhatsApp Button Configuration
+        document.getElementById('whatsappBtn').addEventListener('click', function() {
+            const phoneNumber = "254100733790"; 
+            
+            const nameInput = document.getElementById('clientName').value.trim();
+            const selectedService = document.getElementById('serviceSelect').value;
+            
+            const clientName = nameInput ? nameInput : "Client";
+            const message = `Hello, my name is ${clientName}. I would like to get assistance with: *${selectedService}*.`;
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+            
+            window.open(whatsappUrl, '_blank');
+        });
+
+        // Simple feedback link for Get Started button
+        document.getElementById('getStartedBtn').addEventListener('click', function() {
+            const nameInput = document.getElementById('clientName').value.trim();
+            if(nameInput) {
+                document.getElementById('demoName').innerText = nameInput;
+            }
+            document.getElementById('demoService').innerText = document.getElementById('serviceSelect').value;
+            alert('Demo updated below! Now tap "Chat on WhatsApp" to connect.');
+        });
+
+        // 2. Dark Mode Toggle Configuration
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.innerText = "🌙 Dark Mode";
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.innerText = "☀️ Light Mode";
+            }
+        });
+
+        // 3. Dropdown Checklist Logic
+        function toggleDetails(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById('checklistArrow');
+            if(content.style.display === "none") {
+                content.style.display = "block";
+                arrow.innerText = "▲";
+            } else {
+                content.style.display = "none";
+                arrow.innerText = "▼";
+            }
+        }
+
+        // 4. FAQ Accordion Logic
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            if(answer.style.display === "block") {
+                answer.style.display = "none";
+            } else {
+                answer.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>
