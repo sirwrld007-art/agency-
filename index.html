@@ -494,4 +494,242 @@
             <button class="theme-toggle-btn" id="themeToggle">Dark Mode</button>
         </div>
 
-        <div class
+        <div class="hero-card">
+            <h1>Online Agency</h1>
+            <p class="subtitle">Secure eCitizen and KRA filing services.</p>
+            
+            <div class="form-group">
+                <label for="clientName">Your Name</label>
+                <input type="text" id="clientName" placeholder="e.g. Mwangi J.">
+            </div>
+
+            <div class="form-group">
+                <label for="serviceSelect">Select Target Service</label>
+                <select id="serviceSelect">
+                    <option value="KRA PIN Registration">KRA PIN Registration</option>
+                    <option value="KRA Returns Filing">KRA Returns Filing</option>
+                    <option value="eCitizen Account Help">eCitizen Account Help</option>
+                    <option value="Business Registration">Business Registration</option>
+                </select>
+            </div>
+
+            <button class="btn btn-dark" id="getStartedBtn">Update Live Preview</button>
+            
+            <button class="btn btn-whatsapp" id="whatsappBtn">
+                <svg class="whatsapp-icon" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.742.002-2.602-1.01-5.05-2.85-6.892-1.84-1.842-4.29-2.856-6.896-2.858-5.442 0-9.867 4.372-9.87 9.744a9.664 9.664 0 0 0 1.488 5.008l-.195.713-.671 2.451 2.51-.659.715-.188zm11.332-6.837c-.31-.155-1.837-.905-2.11-.1-.274.1-.473.445-.58.568-.109.123-.217.186-.527.03-.31-.155-1.311-.483-2.498-1.541-.924-.824-1.547-1.842-1.728-2.152-.18-.31-.019-.477.136-.631.14-.139.31-.361.464-.541.155-.18.207-.309.31-.515.103-.206.052-.386-.026-.541-.077-.155-.696-1.677-.954-2.299-.25-.601-.505-.519-.695-.531-.18-.011-.387-.013-.593-.013-.206 0-.541.077-.824.386-.284.309-1.082 1.056-1.082 2.575 0 1.52 1.107 2.99 1.262 3.2 1.55 2.04 2.346 3.22 4.981 4.26 1.83.72 2.62.58 3.56.44.94-.14 2.11-.86 2.4-1.65.29-.79.29-1.47.21-1.61-.08-.14-.29-.22-.6-.375z"/>
+                </svg>
+                Send Secure WhatsApp Request
+            </button>
+        </div>
+
+        <div class="hours-box">
+            <div class="hours-row" style="padding-top: 0; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">
+                <span>Operating Schedule</span>
+                <span>Standard Time</span>
+            </div>
+            <div class="hours-row" style="padding-top: 12px;">
+                <span class="hours-label">Monday - Friday</span>
+                <span class="hours-value">8:00 AM - 5:00 PM</span>
+            </div>
+            <div class="hours-row">
+                <span class="hours-label">Saturday</span>
+                <span class="hours-value">9:00 AM - 1:00 PM</span>
+            </div>
+            <div class="hours-row" style="padding-bottom: 0;">
+                <span class="hours-label">Sunday</span>
+                <span class="hours-value">Closed</span>
+            </div>
+        </div>
+
+        <div class="checklist-box">
+            <div class="checklist-summary" onclick="toggleDetails('checklistContent')">
+                <span>Required Documentation Details</span>
+                <span id="checklistArrow" style="font-size: 11px; color: var(--text-muted);">▼</span>
+            </div>
+            <div id="checklistContent" class="checklist-content" style="display: none;">
+                • <strong>KRA Nil Returns:</strong> National ID Card and KRA PIN parameters.<br>
+                • <strong>KRA New PIN:</strong> ID Number and Date of Birth credentials.<br>
+                • <strong>eCitizen Recovery:</strong> ID Number and access to phone verification lines.<br>
+                • <strong>Business Setup:</strong> Three unique proposed business names.
+            </div>
+        </div>
+
+        <h2 class="section-title">Service Pricing</h2>
+        <table class="pricing-table">
+            <thead>
+                <tr>
+                    <th>Service Type</th>
+                    <th>Est. Time</th>
+                    <th>Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>KRA Nil Returns</strong></td>
+                    <td>10 mins</td>
+                    <td>150/-</td>
+                </tr>
+                <tr>
+                    <td><strong>KRA Income Returns</strong></td>
+                    <td>25 mins</td>
+                    <td>500/-</td>
+                </tr>
+                <tr>
+                    <td><strong>eCitizen Recovery</strong></td>
+                    <td>30 mins</td>
+                    <td>300/-</td>
+                </tr>
+                <tr>
+                    <td><strong>Business Name Search</strong></td>
+                    <td>24 hrs</td>
+                    <td>600/-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="mpesa-card">
+            <div class="mpesa-header">Payment Framework</div>
+            <ol class="mpesa-steps">
+                <li>Submit your order credentials securely over WhatsApp.</li>
+                <li>Our agent reviews data files to ensure accuracy.</li>
+                <li>Complete payment seamlessly via M-Pesa once work parameters are validated.</li>
+            </ol>
+        </div>
+
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-container">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <div class="step-text">
+                    <h4>Log Your Profile</h4>
+                    <p>Enter your client parameters in the form interface above and launch WhatsApp console.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-text">
+                    <h4>Agent Validation</h4>
+                    <p>An engineer reviews structural input files dynamically via encrypted dashboard paths.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-text">
+                    <h4>Receipt Delivery</h4>
+                    <p>Your processed official document downloads are returned directly to your message log.</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Client Feedback</h2>
+        <div class="review-card">
+            <div class="review-text">"Sorted my locked eCitizen setup within 15 minutes. Very professional execution."</div>
+            <div class="review-user">Kevin O., Nairobi</div>
+        </div>
+        <div class="review-card">
+            <div class="review-text">"Filing my KRA returns has never been this smooth. Highly recommend their automation."</div>
+            <div class="review-user">Mary W., Mombasa</div>
+        </div>
+
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">Is my credential data secure? <span style="font-size:11px; color:var(--text-muted);">▼</span></div>
+            <div class="faq-answer">Completely. All user data buffers are exclusively read inside runtime memory. Files are instantly cleared from systemic log histories the moment document printouts are securely transferred.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">What happens if validation parameters fail? <span style="font-size:11px; color:var(--text-muted);">▼</span></div>
+            <div class="faq-answer">If account access arrays show syntax errors or locked statuses, our active agent helps coordinate manual verification pipelines straight inside your WhatsApp interface loop.</div>
+        </div>
+
+        <div class="agent-panel-demo">
+            <span class="demo-badge">LIVE TRACKING SIMULATOR</span>
+            <h3>Console Operations</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 12px 0;">Simulated active metrics dashboard engine trace.</p>
+            
+            <div class="request-card">
+                <div>
+                    <strong id="demoName">Guest Client</strong><br>
+                    <span style="font-size: 12px; color: var(--text-muted);">Runtime Token Status</span><br>
+                    <span style="color: #2563eb; font-size: 13px; font-weight:600;" id="demoService">KRA PIN Registration</span>
+                </div>
+                <span class="status-badge">Active Connection</span>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 Online Agency. Premium Technical Consulting.<br>
+            <span style="font-size: 11px; opacity: 0.6; display:inline-block; margin-top:6px;">Independent digital logistics platform execution.</span>
+        </footer>
+    </div>
+
+    <script>
+        // Live Digital Clock Logic
+        function updateClock() {
+            const clockElement = document.getElementById('liveClock');
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // convert 0 to 12
+            const hoursStr = String(hours).padStart(2, '0');
+            
+            clockElement.innerText = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Run immediately on load
+
+        // WhatsApp Launch Handler Logic Array 
+        document.getElementById('whatsappBtn').addEventListener('click', function() {
+            const phone = "254100733790"; 
+            const name = document.getElementById('clientName').value.trim() || "Client";
+            const service = document.getElementById('serviceSelect').value;
+            const message = `Hello, my name is ${name}. I need professional assistance with: *${service}*. Please verify my request parameters.`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        });
+
+        // Interactive Live Dashboard Controller Sync
+        document.getElementById('getStartedBtn').addEventListener('click', function() {
+            const name = document.getElementById('clientName').value.trim();
+            if(name) document.getElementById('demoName').innerText = name;
+            document.getElementById('demoService').innerText = document.getElementById('serviceSelect').value;
+            alert('Simulation metric updated in the tracking module below!');
+        });
+
+        // Adaptive Theme Toggle 
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.innerText = "Dark Mode";
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.innerText = "Light Mode";
+            }
+        });
+
+        // Checklist Dropdown Animation Driver
+        function toggleDetails(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById('checklistArrow');
+            if(content.style.display === "none") {
+                content.style.display = "block";
+                arrow.innerText = "▲";
+            } else {
+                content.style.display = "none";
+                arrow.innerText = "▼";
+            }
+        }
+
+        // Accordion Animation Driver Logic
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            answer.style.display = (answer.style.display === "block") ? "none" : "block";
+        }
+    </script>
+</body>
+</html>
+
