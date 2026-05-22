@@ -3,61 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Portal | Client Dashboard</title>
+    <title>Online Agency | Cyber Services</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f8fafc; --card: #ffffff; --primary: #0f172a; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); padding: 20px; }
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 20px; }
         .container { max-width: 480px; margin: 0 auto; }
-        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
-        .total-box { font-size: 20px; font-weight: 800; text-align: center; margin: 15px 0; color: var(--primary); }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h1 { font-size: 24px; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; box-sizing: border-box; font-size: 15px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; color: white; margin-bottom: 10px; }
+        .btn-primary { background: var(--primary); }
+        .btn-whatsapp { background: #25d366; }
+        .total-display { font-size: 22px; font-weight: 800; text-align: center; margin: 10px 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <h3>Service Calculator</h3>
-        <select id="serviceSelect" onchange="calculateTotal()">
+        <h1>Online Agency</h1>
+        <p style="color: #64748b; font-size: 14px;">Fast & Reliable eCitizen & KRA Services.</p>
+        
+        <select id="serviceSelect" onchange="updateTotal()">
             <option value="300">eCitizen Phone Change (300/-)</option>
             <option value="400">SHA Rate Reduction (400/-)</option>
             <option value="250">KRA Email/PIN (250/-)</option>
             <option value="500">NTSA Services (500/-)</option>
         </select>
-        <div class="total-box" id="totalDisplay">Total: 300/-</div>
-        <input type="text" id="clientName" placeholder="Enter Full Name">
-        <button class="btn" onclick="sendWhatsApp()">Submit Order</button>
+        
+        <div class="total-display" id="totalDisplay">Total: 300/-</div>
+        <input type="text" id="clientName" placeholder="Your Name">
+        
+        <button class="btn btn-primary" onclick="submitOrder()">Submit Order</button>
+        <button class="btn btn-whatsapp" onclick="chatWhatsApp()">Chat on WhatsApp</button>
     </div>
 
     <div class="card">
-        <h3>Order Status Portal</h3>
+        <h2 style="font-size: 18px; margin-top:0;">Order Status Portal</h2>
         <input type="text" id="trackName" placeholder="Enter Name to Track">
-        <button class="btn" style="background:#2563eb;" onclick="trackStatus()">Check Status</button>
-        <p id="statusResult" style="margin-top:15px; font-weight:600; text-align:center;"></p>
+        <button class="btn" style="background: var(--accent);" onclick="trackStatus()">Check Status</button>
+        <p id="statusResult" style="text-align:center; font-weight:600;"></p>
     </div>
 </div>
 
 <script>
-    function calculateTotal() {
+    function updateTotal() {
         const price = document.getElementById('serviceSelect').value;
         document.getElementById('totalDisplay').innerText = `Total: ${price}/-`;
     }
 
-    function sendWhatsApp() {
+    function submitOrder() {
         const name = document.getElementById('clientName').value;
         const service = document.getElementById('serviceSelect').options[document.getElementById('serviceSelect').selectedIndex].text;
         const total = document.getElementById('totalDisplay').innerText;
-        window.open(`https://wa.me/254100733790?text=Order for ${name}. Service: ${service}. ${total}.`, '_blank');
+        if(!name) { alert("Enter your name first!"); return; }
+        window.open(`https://wa.me/254100733790?text=New Order for ${name}. Service: ${service}. ${total}.`, '_blank');
+    }
+
+    function chatWhatsApp() {
+        window.open("https://wa.me/254100733790", '_blank');
     }
 
     function trackStatus() {
-        const name = document.getElementById('trackName').value.toLowerCase();
+        const name = document.getElementById('trackName').value;
         const display = document.getElementById('statusResult');
-        // Simple Logic: You can expand this with a real database later
-        if(name === "") { display.innerText = "Please enter a name."; }
-        else { display.innerText = "Status: Processing..."; display.style.color = "#d97706"; }
+        if(!name) { display.innerText = "Please enter a name."; }
+        else { display.innerText = "Status: Processing your request..."; display.style.color = "#d97706"; }
     }
 </script>
 </body>
