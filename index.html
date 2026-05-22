@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Cyber Services Agency - Professional Digital Assistance</title>
+    <meta name="description" content="Professional assistance with KRA PIN, eCitizen, SHA, and NTSA services. Fast, secure, and reliable digital solutions.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --grid-line: #cbd5e1; 
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-btn: #0f172a;
+            --primary-btn-text: #ffffff;
+            --border-color: #e2e8f0;
+        }
+        [data-theme="dark"] {
+            --bg-color: #070d19;
+            --grid-line: #1e293b; 
+            --card-bg: #111b35;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-btn: #38bdf8;
+            --primary-btn-text: #0f172a;
+            --border-color: #1e293b;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 20px 20px; color: var(--text-main); margin: 0; padding: 20px; transition: 0.3s; }
+        .container { max-width: 480px; margin: 0 auto; }
+        .header-status-bar, .hero-card, .hours-box, .checklist-box, .step-item, .review-card, .faq-item, .agent-panel-demo, .pricing-table, .mpesa-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        h1 { font-size: 24px; margin: 0 0 10px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-whatsapp { background-color: #25d366; color: white; }
+        .pricing-table { width: 100%; border-collapse: collapse; overflow: hidden; }
+        .pricing-table th, .pricing-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+        .section-title { font-size: 18px; margin: 25px 0 15px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-main); margin-bottom: 15px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-status-bar">
+            <span>🟢 ONLINE</span>
+            <button id="themeToggle">Toggle Theme</button>
+        </div>
+
+        <div class="hero-card">
+            <h1>Cyber Services Agency</h1>
+            <p>Select your service and submit your request via WhatsApp.</p>
+            <input type="text" id="clientName" placeholder="Enter Full Name or ID Number">
+            <select id="serviceSelect">
+                <option value="eCitizen Phone Change">eCitizen: Phone Number Change</option>
+                <option value="SHA Rate Reduction">SHA: Phone Change & Rate Reduction</option>
+                <option value="KRA Email Update">KRA: Email Change (Indiv/Non-Indiv)</option>
+                <option value="KRA PIN Retrieval">KRA: PIN Retrieval</option>
+                <option value="NTSA Services">NTSA: General Services</option>
+            </select>
+            <button class="btn btn-whatsapp" id="whatsappBtn">Send via WhatsApp</button>
+        </div>
+
+        <h2 class="section-title">Service Catalog</h2>
+        <div class="checklist-box">
+            <p>• <strong>eCitizen:</strong> Phone number change, account recovery.<br>
+            • <strong>SHA:</strong> Phone update & contribution rate reduction.<br>
+            • <strong>KRA:</strong> Email change, PIN retrieval, tax filing.<br>
+            • <strong>NTSA:</strong> Licenses, logbooks, and ownership searches.</p>
+            <p><small><em>Note: If no ID is available, provide full names and ID number.</em></small></p>
+        </div>
+
+        <table class="pricing-table">
+            <thead><tr><th>Service</th><th>Time</th><th>Rate</th></tr></thead>
+            <tbody>
+                <tr><td>eCitizen Phone</td><td>20m</td><td>300/-</td></tr>
+                <tr><td>SHA Reduction</td><td>30m</td><td>400/-</td></tr>
+                <tr><td>KRA Email</td><td>15m</td><td>250/-</td></tr>
+                <tr><td>KRA PIN</td><td>10m</td><td>200/-</td></tr>
+                <tr><td>NTSA</td><td>Var.</td><td>500/-</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('whatsappBtn').addEventListener('click', function() {
+            const phone = "254100733790"; 
+            const name = document.getElementById('clientName').value.trim() || "Guest";
+            const service = document.getElementById('serviceSelect').value;
+            const message = `Hello, my name is ${name}. I need assistance with: *${service}*.`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        });
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        });
+    </script>
+</body>
+</html>
