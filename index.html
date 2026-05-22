@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Agency - Premium KRA & eCitizen Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-btn: #0f172a;
+            --primary-btn-text: #ffffff;
+            --accent-bg: #0f172a;
+            --accent-text: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg-color: #0b1329;
+            --card-bg: #111b35;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-btn: #38bdf8;
+            --primary-btn-text: #0f172a;
+            --accent-bg: #1e293b;
+            --accent-text: #f8fafc;
+            --border-color: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Header Status Bar with Live Clock Integration */
+        .header-status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #10b981;
+            border-radius: 50%;
+            animation: pulse-animation 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+
+        .live-clock {
+            color: #2563eb;
+            background-color: rgba(37, 99, 235, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        .theme-toggle-btn {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .hero-card {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 32px 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 30px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .btn {
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-sizing: border-box;
+            text-decoration: none;
+            transition: transform 0.1s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-dark {
+            background-color: var(--primary-btn);
+            color: var(--primary-btn-text);
+        }
+
+        .btn-whatsapp {
+            background-color: #25d366;
+            color: white;
+            margin-bottom: 0;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+        }
+
+        .whatsapp-icon {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 36px 0 16px;
+            letter-spacing: -0.3px;
+        }
+
+        /* Checklist Dropdown */
+        .checklist-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .checklist-summary {
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checklist-content {
+            margin-top: 14px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+
+        /* Table Design */
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .pricing-table th, .pricing-table td {
+            padding: 16px;
+            text-align: left;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pricing-table th {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Modern Payment Instruction Card */
+        .mpesa-card {
+            background-color: var(--card-bg);
+            border: 1px solid #10b981;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .mpesa-header {
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mpesa-steps {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        /* Workflow Steps */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 16px;
+            background-color: var(--card-bg);
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .step-number {
+            background-color: #2563eb;
+            color: white;
+            font-weight: 700;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .step-text h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .step-text p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Client Feedback Testimonials */
+        .review-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+        }
+
+        .review-text {
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .review-user {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* FAQ Accordion */
+        .faq-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 16px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .faq-answer {
+            padding: 0 16px 16px 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            display: none;
+            line-height: 1.5;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+
+        /* Agent Panel Mockup */
+        .agent-panel-demo {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 32px;
+        }
+
+        .demo-badge {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .request-card {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            background-color: #dcfce7;
+            color: #15803d;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="header-status-bar">
+            <div class="status-info">
+                <div class="pulse-dot"></div>
+                <span style="color: #10b981;">ONLINE</span>
+                <span style="color: var(--text-muted); font-weight: normal;">|</span>
+                <span id="liveClock" class="live-clock">00:00:00 AM</span>
+            </div>
+            <button class="theme-toggle-btn" id="themeToggle">Dark Mode</button>
+        </div>
+
+        <div class="hero-card">
+            <h1>Online Agency</h1>
+            <p class="subtitle">Secure eCitizen and KRA filing services.</p>
+            
+            <div class="form-group">
+                <label for="clientName">Your Name</label>
+                <input type="text" id="clientName" placeholder="e.g. Mwangi J.">
+            </div>
+
+            <div class="form-group">
+                <label for="serviceSelect">Select Target Service</label>
+                <select id="serviceSelect">
+                    <option value="KRA PIN Registration">KRA PIN Registration</option>
+                    <option value="KRA Returns Filing">KRA Returns Filing</option>
+                    <option value="eCitizen Account Help">eCitizen Account Help</option>
+                    <option value="Business Registration">Business Registration</option>
+                </select>
+            </div>
+
+            <button class="btn btn-dark" id="getStartedBtn">Update Live Preview</button>
+            
+            <button class="btn btn-whatsapp" id="whatsappBtn">
+                <svg class="whatsapp-icon" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.742.002-2.602-1.01-5.05-2.85-6.892-1.84-1.842-4.29-2.856-6.896-2.858-5.442 0-9.867 4.372-9.87 9.744a9.664 9.664 0 0 0 1.488 5.008l-.195.713-.671 2.451 2.51-.659.715-.188zm11.332-6.837c-.31-.155-1.837-.905-2.11-.1-.274.1-.473.445-.58.568-.109.123-.217.186-.527.03-.31-.155-1.311-.483-2.498-1.541-.924-.824-1.547-1.842-1.728-2.152-.18-.31-.019-.477.136-.631.14-.139.31-.361.464-.541.155-.18.207-.309.31-.515.103-.206.052-.386-.026-.541-.077-.155-.696-1.677-.954-2.299-.25-.601-.505-.519-.695-.531-.18-.011-.387-.013-.593-.013-.206 0-.541.077-.824.386-.284.309-1.082 1.056-1.082 2.575 0 1.52 1.107 2.99 1.262 3.2 1.55 2.04 2.346 3.22 4.981 4.26 1.83.72 2.62.58 3.56.44.94-.14 2.11-.86 2.4-1.65.29-.79.29-1.47.21-1.61-.08-.14-.29-.22-.6-.375z"/>
+                </svg>
+                Send Secure WhatsApp Request
+            </button>
+        </div>
+
+        <div class="checklist-box">
+            <div class="checklist-summary" onclick="toggleDetails('checklistContent')">
+                <span>Required Documentation Details</span>
+                <span id="checklistArrow" style="font-size: 11px; color: var(--text-muted);">▼</span>
+            </div>
+            <div id="checklistContent" class="checklist-content" style="display: none;">
+                • <strong>KRA Nil Returns:</strong> National ID Card and KRA PIN parameters.<br>
+                • <strong>KRA New PIN:</strong> ID Number and Date of Birth credentials.<br>
+                • <strong>eCitizen Recovery:</strong> ID Number and access to phone verification lines.<br>
+                • <strong>Business Setup:</strong> Three unique proposed business names.
+            </div>
+        </div>
+
+        <h2 class="section-title">Service Pricing</h2>
+        <table class="pricing-table">
+            <thead>
+                <tr>
+                    <th>Service Type</th>
+                    <th>Est. Time</th>
+                    <th>Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>KRA Nil Returns</strong></td>
+                    <td>10 mins</td>
+                    <td>150/-</td>
+                </tr>
+                <tr>
+                    <td><strong>KRA Income Returns</strong></td>
+                    <td>25 mins</td>
+                    <td>500/-</td>
+                </tr>
+                <tr>
+                    <td><strong>eCitizen Recovery</strong></td>
+                    <td>30 mins</td>
+                    <td>300/-</td>
+                </tr>
+                <tr>
+                    <td><strong>Business Name Search</strong></td>
+                    <td>24 hrs</td>
+                    <td>600/-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="mpesa-card">
+            <div class="mpesa-header">Payment Framework</div>
+            <ol class="mpesa-steps">
+                <li>Submit your order credentials securely over WhatsApp.</li>
+                <li>Our agent reviews data files to ensure accuracy.</li>
+                <li>Complete payment seamlessly via M-Pesa once work parameters are validated.</li>
+            </ol>
+        </div>
+
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-container">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <div class="step-text">
+                    <h4>Log Your Profile</h4>
+                    <p>Enter your client parameters in the form interface above and launch WhatsApp console.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-text">
+                    <h4>Agent Validation</h4>
+                    <p>An engineer reviews structural input files dynamically via encrypted dashboard paths.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-text">
+                    <h4>Receipt Delivery</h4>
+                    <p>Your processed official document downloads are returned directly to your message log.</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Client Feedback</h2>
+        <div class="review-card">
+            <div class="review-text">"Sorted my locked eCitizen setup within 15 minutes. Very professional execution."</div>
+            <div class="review-user">Kevin O., Nairobi</div>
+        </div>
+        <div class="review-card">
+            <div class="review-text">"Filing my KRA returns has never been this smooth. Highly recommend their automation."</div>
+            <div class="review-user">Mary W., Mombasa</div>
+        </div>
+
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">Is my credential data secure? <span style="font-size:11px; color:var(--text-muted);">▼</span></div>
+            <div class="faq-answer">Completely. All user data buffers are exclusively read inside runtime memory. Files are instantly cleared from systemic log histories the moment document printouts are securely transferred.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">What happens if validation parameters fail? <span style="font-size:11px; color:var(--text-muted);">▼</span></div>
+            <div class="faq-answer">If account access arrays show syntax errors or locked statuses, our active agent helps coordinate manual verification pipelines straight inside your WhatsApp interface loop.</div>
+        </div>
+
+        <div class="agent-panel-demo">
+            <span class="demo-badge">LIVE TRACKING SIMULATOR</span>
+            <h3>Console Operations</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 12px 0;">Simulated active metrics dashboard engine trace.</p>
+            
+            <div class="request-card">
+                <div>
+                    <strong id="demoName">Guest Client</strong><br>
+                    <span style="font-size: 12px; color: var(--text-muted);">Runtime Token Status</span><br>
+                    <span style="color: #2563eb; font-size: 13px; font-weight:600;" id="demoService">KRA PIN Registration</span>
+                </div>
+                <span class="status-badge">Active Connection</span>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 Online Agency. Premium Technical Consulting.<br>
+            <span style="font-size: 11px; opacity: 0.6; display:inline-block; margin-top:6px;">Independent digital logistics platform execution.</span>
+        </footer>
+    </div>
+
+    <script>
+        // Live Digital Clock Logic
+        function updateClock() {
+            const clockElement = document.getElementById('liveClock');
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // convert 0 to 12
+            const hoursStr = String(hours).padStart(2, '0');
+            
+            clockElement.innerText = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Run immediately on load
+
+        // WhatsApp Launch Handler Logic Array 
+        document.getElementById('whatsappBtn').addEventListener('click', function() {
+            const phone = "254100733790"; 
+            const name = document.getElementById('clientName').value.trim() || "Client";
+            const service = document.getElementById('serviceSelect').value;
+            const message = `Hello, my name is ${name}. I need professional assistance with: *${service}*. Please verify my request parameters.`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        });
+
+        // Interactive Live Dashboard Controller Sync
+        document.getElementById('getStartedBtn').addEventListener('click', function() {
+            const name = document.getElementById('clientName').value.trim();
+            if(name) document.getElementById('demoName').innerText = name;
+            document.getElementById('demoService').innerText = document.getElementById('serviceSelect').value;
+            alert('Simulation metric updated in the tracking module below!');
+        });
+
+        // Adaptive Theme Toggle 
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.innerText = "Dark Mode";
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.innerText = "Light Mode";
+            }
+        });
+
+        // Checklist Dropdown Animation Driver
+        function toggleDetails(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById('checklistArrow');
+            if(content.style.display === "none") {
+                content.style.display = "block";
+                arrow.innerText = "▲";
+            } else {
+                content.style.display = "none";
+                arrow.innerText = "▼";
+            }
+        }
+
+        // Accordion Animation Driver Logic
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            answer.style.display = (answer.style.display === "block") ? "none" : "block";
+        }
+    </script>
+</body>
+</html>
