@@ -1,0 +1,1023 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const WHATSAPP_NUMBER = "254100733790";
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
+const BUSINESS_EMAIL = "onlineagency@gmail.com";
+const SUPER_ADMIN_PASSWORD = "SUPERADMIN2024";
+
+const BUSINESS_HOURS = {
+  1: { open: 8, close: 20 }, 2: { open: 8, close: 20 }, 3: { open: 8, close: 20 },
+  4: { open: 8, close: 20 }, 5: { open: 8, close: 20 }, 6: { open: 9, close: 17 }, 0: null,
+};
+
+const SERVICES = [
+  { id: "ecitizen-phone", name: "eCitizen Phone Number Change", icon: "📱", price: "Ksh 500", time: "24hrs", popular: true, category: "eCitizen" },
+  { id: "sha-services", name: "SHA Services", icon: "🏥", price: "Ksh 300", time: "48hrs", popular: true, category: "Health" },
+  { id: "kra-pin", name: "KRA PIN Retrieval", icon: "🔑", price: "Ksh 200", time: "12hrs", popular: true, category: "KRA" },
+  { id: "kra-email", name: "KRA Email Change", icon: "📧", price: "Ksh 350", time: "24hrs", popular: false, category: "KRA" },
+  { id: "ntsa-services", name: "NTSA Services", icon: "🚗", price: "Ksh 400", time: "48hrs", popular: false, category: "NTSA" },
+  { id: "helb-services", name: "HELB Services", icon: "🎓", price: "Ksh 300", time: "48hrs", popular: true, category: "Education" },
+  { id: "good-conduct", name: "Good Conduct Application", icon: "📋", price: "Ksh 600", time: "72hrs", popular: false, category: "Police" },
+  { id: "passport", name: "Passport Application Assistance", icon: "✈️", price: "Ksh 800", time: "5 days", popular: false, category: "Immigration" },
+];
+
+const STATUS_COLORS = { Pending: "#f59e0b", "In Progress": "#3b82f6", Completed: "#10b981" };
+const STATUS_BG = { Pending: "#451a03", "In Progress": "#1e3a5f", Completed: "#052e16" };
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+const genRequestId = () => `OA-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+const ls = { get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set: (k, v) => localStorage.setItem(k, JSON.stringify(v)) };
+const waLink = (msg) => `${WHATSAPP_LINK}?text=${encodeURIComponent(msg)}`;
+
+function getBusinessStatus() {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const hours = BUSINESS_HOURS[day];
+  if (!hours) return { open: false, next: "Monday 8:00 AM", label: "Closed Today" };
+  if (hour >= hours.open && hour < hours.close) return { open: true, closes: `${hours.close}:00`, label: "Open" };
+  if (hour < hours.open) return { open: false, next: `Today ${hours.open}:00 AM`, label: "Opens Later" };
+  const nextDay = day === 6 ? 1 : day + 1;
+  const nextHours = BUSINESS_HOURS[nextDay];
+  if (!nextHours) return { open: false, next: "Monday 8:00 AM", label: "Closed" };
+  return { open: false, next: `${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][nextDay]} ${nextHours.open}:00 AM`, label: "Closed" };
+}
+
+function getNightMode() { const h = new Date().getHours(); return h >= 18 || h < 6; }
+function getGreeting() { const h = new Date().getHours(); if (h < 12) return "Good Morning"; if (h < 17) return "Good Afternoon"; return "Good Evening"; }
+function getSeason() { const m = new Date().getMonth(); if ([5,6,7].includes(m)) return "sunny"; if ([3,4,10,11].includes(m)) return "rainy"; return "normal"; }
+
+// ─── STYLES ───────────────────────────────────────────────────────────────────
+const injectStyles = () => {
+  if (document.getElementById("oa-styles")) return;
+  const s = document.createElement("style");
+  s.id = "oa-styles";
+  s.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--em:#10b981;--em2:#059669;--neon:0 0 20px #10b98155;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);--bg:#080808;--bg2:#0d0d0d;--bg3:#111;--text:#f1f5f9;--text2:#94a3b8;--text3:#475569}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+    .night{--bg:#030303;--em:#34d399}
+    .sunny{--em:#f59e0b}
+    .rainy{--em:#60a5fa}
+    ::-webkit-scrollbar{width:4px;background:var(--bg2)}
+    ::-webkit-scrollbar-thumb{background:var(--em);border-radius:4px}
+    .glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border)}
+    .glass-strong{background:rgba(255,255,255,0.07);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.12)}
+    .glow{box-shadow:var(--neon)}
+    .neon-text{color:var(--em);text-shadow:0 0 20px currentColor}
+    .btn-primary{background:linear-gradient(135deg,var(--em),var(--em2));color:#fff;border:none;padding:12px 28px;border-radius:12px;font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:all .3s;box-shadow:var(--neon)}
+    .btn-primary:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 35px var(--em)}
+    .btn-ghost{background:transparent;color:var(--em);border:1px solid var(--em);padding:11px 24px;border-radius:12px;font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:all .3s}
+    .btn-ghost:hover{background:var(--em);color:#000;box-shadow:var(--neon)}
+    .card{border-radius:20px;padding:24px;transition:all .3s}
+    .card:hover{border-color:var(--em)!important;box-shadow:0 0 30px rgba(16,185,129,.15)!important}
+    .input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 18px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;width:100%;outline:none;transition:all .3s}
+    .input:focus{border-color:var(--em);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+    .input::placeholder{color:var(--text3)}
+    .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px}
+    .toast{position:fixed;bottom:80px;right:20px;z-index:9999;padding:14px 20px;border-radius:14px;font-size:14px;font-weight:600;animation:slideUp .3s ease;max-width:280px}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.95)}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes glow-pulse{0%,100%{box-shadow:0 0 15px var(--em)}50%{box-shadow:0 0 40px var(--em)}}
+    @keyframes aurora{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes typing{from{width:0}to{width:100%}}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes ripple{0%{transform:scale(0);opacity:1}100%{transform:scale(4);opacity:0}}
+    .animate-float{animation:float 4s ease-in-out infinite}
+    .animate-pulse-glow{animation:glow-pulse 2s ease-in-out infinite}
+    .animate-fade-in{animation:fadeIn .6s ease forwards}
+    .page-section{animation:fadeIn .5s ease both}
+    .progress-bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden}
+    .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--em),#34d399);transition:width 1s ease}
+    .skeleton{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:skeleton 1.5s infinite;border-radius:8px}
+    @keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .wa-float{position:fixed;bottom:24px;right:24px;z-index:999;animation:float 3s ease-in-out infinite}
+    .wa-btn{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;box-shadow:0 0 30px rgba(37,211,102,.4);border:none;transition:transform .3s}
+    .wa-btn:hover{transform:scale(1.15)}
+    .nav-glass{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;transition:all .4s}
+    .tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+    .stepper{display:flex;align-items:center;gap:0;margin:24px 0}
+    .step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+    .step-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;z-index:1}
+    .step-line{height:2px;flex:1;margin-top:-18px;z-index:0}
+    .chatbot{position:fixed;bottom:100px;right:24px;z-index:998;width:300px}
+    @media(max-width:768px){.nav-glass{padding:0 16px}.chatbot{width:260px;right:16px}}
+  `;
+  document.head.appendChild(s);
+};
+
+// ─── HOOKS ────────────────────────────────────────────────────────────────────
+function useClock() {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
+  return time;
+}
+
+function useToast() {
+  const [toasts, setToasts] = useState([]);
+  const show = useCallback((msg, type = "success") => {
+    const id = Date.now();
+    setToasts(p => [...p, { id, msg, type }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
+  }, []);
+  return { toasts, show };
+}
+
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
+
+function ToastContainer({ toasts }) {
+  const colors = { success: { bg: "#052e16", border: "#10b981", text: "#34d399" }, error: { bg: "#450a0a", border: "#ef4444", text: "#fca5a5" }, info: { bg: "#0c1445", border: "#3b82f6", text: "#93c5fd" } };
+  return (
+    <div style={{ position: "fixed", bottom: 90, right: 20, zIndex: 9999, display: "flex", flexDirection: "column", gap: 8 }}>
+      {toasts.map(t => {
+        const c = colors[t.type] || colors.success;
+        return (
+          <div key={t.id} className="toast glass" style={{ background: c.bg, borderColor: c.border, color: c.text, border: `1px solid ${c.border}` }}>
+            {t.type === "success" ? "✅" : t.type === "error" ? "❌" : "ℹ️"} {t.msg}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function WaFloat({ tooltip }) {
+  const [showTip, setShowTip] = useState(false);
+  return (
+    <div className="wa-float">
+      {showTip && (
+        <div className="glass" style={{ position: "absolute", right: 70, bottom: 10, padding: "8px 14px", borderRadius: 10, whiteSpace: "nowrap", fontSize: 13, color: "#fff" }}>
+          Chat with us!
+        </div>
+      )}
+      <button className="wa-btn" onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}
+        onClick={() => window.open(`${WHATSAPP_LINK}?text=Hello Online Agency, I need help with your services.`, "_blank")}>
+        <span style={{ fontSize: 28 }}>💬</span>
+      </button>
+      <div style={{ position: "absolute", top: -4, right: -4, width: 14, height: 14, background: "#10b981", borderRadius: "50%", border: "2px solid #000", animation: "glow-pulse 2s infinite" }} />
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const s = getBusinessStatus();
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: s.open ? "rgba(16,185,129,.15)" : "rgba(239,68,68,.15)", border: `1px solid ${s.open ? "#10b981" : "#ef4444"}`, fontSize: 12, fontWeight: 700 }}>
+      <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.open ? "#10b981" : "#ef4444", animation: s.open ? "glow-pulse 1.5s infinite" : "pulse 2s infinite" }} />
+      <span style={{ color: s.open ? "#34d399" : "#fca5a5" }}>{s.open ? "Open" : s.label}</span>
+    </div>
+  );
+}
+
+function Navbar({ page, setPage, role, nightMode }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [logoPressed, setLogoPressed] = useState(false);
+  const pressTimer = useRef(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleLogoPress = () => { pressTimer.current = setTimeout(() => { setPage("superadmin-prompt"); }, 1500); };
+  const handleLogoRelease = () => clearTimeout(pressTimer.current);
+
+  const navItems = [
+    { id: "home", label: "Home", icon: "🏠" },
+    { id: "services", label: "Services", icon: "⚡" },
+    { id: "tracker", label: "Track Request", icon: "🔍" },
+    ...(role === "admin" || role === "superadmin" ? [{ id: "admin", label: "Admin", icon: "🛡️" }] : []),
+  ];
+
+  return (
+    <nav className={`nav-glass glass ${scrolled ? "glow" : ""}`} style={{ borderBottom: scrolled ? "1px solid var(--glass-border)" : "1px solid transparent", paddingTop: 14, paddingBottom: 14 }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div onMouseDown={handleLogoPress} onMouseUp={handleLogoRelease} onTouchStart={handleLogoPress} onTouchEnd={handleLogoRelease}
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+          <div className="animate-pulse-glow" style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#10b981,#059669)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900 }}>
+            OA
+          </div>
+          <div>
+            <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 18, background: "linear-gradient(135deg,#fff,#10b981)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              Online Agency
+            </div>
+            <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: 1 }}>KENYA DIGITAL SERVICES</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <StatusBadge />
+          {nightMode && <span className="tag" style={{ background: "rgba(99,102,241,.2)", color: "#a5b4fc", border: "1px solid #6366f1" }}>🌙 Night Mode</span>}
+
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="nav-links">
+            {navItems.map(item => (
+              <button key={item.id} onClick={() => { setPage(item.id); setMenuOpen(false); }}
+                style={{ background: page === item.id ? "rgba(16,185,129,.15)" : "transparent", color: page === item.id ? "var(--em)" : "var(--text2)", border: page === item.id ? "1px solid rgba(16,185,129,.3)" : "1px solid transparent", padding: "8px 14px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 14, transition: "all .2s", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 14 }}>{item.icon}</span>
+                <span className="hide-mobile">{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <button style={{ background: "none", border: "none", color: "var(--text)", cursor: "pointer", fontSize: 22, display: "none" }} className="menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
+      </div>
+
+      {menuOpen && (
+        <div className="glass" style={{ marginTop: 12, borderRadius: 14, padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => { setPage(item.id); setMenuOpen(false); }}
+              style={{ background: page === item.id ? "rgba(16,185,129,.15)" : "transparent", color: page === item.id ? "var(--em)" : "var(--text)", border: "none", padding: "12px 16px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 15, textAlign: "left", display: "flex", gap: 10 }}>
+              {item.icon} {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <style>{`@media(max-width:640px){.nav-links{display:none!important}.menu-btn{display:flex!important}.hide-mobile{display:none}}`}</style>
+    </nav>
+  );
+}
+
+function ClockWeather({ nightMode }) {
+  const time = useClock();
+  const season = getSeason();
+  const weatherMock = { sunny: { icon: "☀️", temp: 28, desc: "Sunny" }, rainy: { icon: "🌧️", temp: 20, desc: "Rainy" }, normal: { icon: "⛅", temp: 24, desc: "Partly Cloudy" } };
+  const w = weatherMock[season];
+
+  return (
+    <div className="glass card" style={{ display: "inline-flex", flexDirection: "column", gap: 8, minWidth: 200 }}>
+      <div style={{ fontSize: 42, fontWeight: 800, fontFamily: "'Outfit',sans-serif", letterSpacing: -2, color: "var(--em)", textShadow: "0 0 30px currentColor" }}>
+        {time.toTimeString().slice(0, 5)}
+      </div>
+      <div style={{ color: "var(--text2)", fontSize: 13, fontWeight: 500 }}>
+        {time.toLocaleDateString("en-KE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 8, borderTop: "1px solid var(--glass-border)" }}>
+        <span style={{ fontSize: 20 }}>{w.icon}</span>
+        <span style={{ fontWeight: 700, color: "var(--text)" }}>{w.temp}°C</span>
+        <span style={{ color: "var(--text2)", fontSize: 13 }}>{w.desc} · Nairobi</span>
+      </div>
+    </div>
+  );
+}
+
+function TypingHeadline({ texts }) {
+  const [idx, setIdx] = useState(0);
+  const [char, setChar] = useState(0);
+  const [del, setDel] = useState(false);
+
+  useEffect(() => {
+    const current = texts[idx];
+    if (!del && char < current.length) {
+      const t = setTimeout(() => setChar(c => c + 1), 60);
+      return () => clearTimeout(t);
+    } else if (!del && char === current.length) {
+      const t = setTimeout(() => setDel(true), 2000);
+      return () => clearTimeout(t);
+    } else if (del && char > 0) {
+      const t = setTimeout(() => setChar(c => c - 1), 35);
+      return () => clearTimeout(t);
+    } else if (del && char === 0) {
+      setDel(false);
+      setIdx(i => (i + 1) % texts.length);
+    }
+  }, [char, del, idx, texts]);
+
+  return (
+    <span className="neon-text" style={{ fontWeight: 800 }}>
+      {texts[idx].slice(0, char)}
+      <span style={{ animation: "blink 1s infinite" }}>|</span>
+    </span>
+  );
+}
+
+function HeroSection({ setPage, profile, nightMode }) {
+  const greeting = getGreeting();
+  return (
+    <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden", paddingTop: 80 }}>
+      {/* Aurora background */}
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(16,185,129,.12) 0%, transparent 60%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "20%", left: "-10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,.06) 0%, transparent 70%)", animation: "float 6s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", top: "60%", right: "-5%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,.05) 0%, transparent 70%)", animation: "float 8s ease-in-out infinite 2s" }} />
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", width: "100%", display: "grid", gridTemplateColumns: "1fr auto", gap: 48, alignItems: "center" }}>
+        <div className="animate-fade-in">
+          <div className="tag" style={{ background: "rgba(16,185,129,.1)", color: "var(--em)", border: "1px solid rgba(16,185,129,.3)", display: "inline-flex", gap: 6, alignItems: "center", marginBottom: 20 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--em)", animation: "glow-pulse 1.5s infinite" }} />
+            🇰🇪 Kenya's #1 Digital Gov Services Platform
+          </div>
+
+          <h1 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 900, fontSize: "clamp(32px,5vw,64px)", lineHeight: 1.1, marginBottom: 16 }}>
+            {profile ? `${greeting}, ${profile.name.split(" ")[0]}! 👋` : `${greeting}!`}
+            <br />
+            <span style={{ color: "var(--text2)", fontWeight: 700 }}>Fast, Simple </span>
+            <TypingHeadline texts={["eCitizen Help", "KRA Services", "NTSA Assistance", "HELB Support", "Good Conduct", "Passport Help"]} />
+          </h1>
+
+          <p style={{ color: "var(--text2)", fontSize: "clamp(15px,2vw,18px)", lineHeight: 1.7, marginBottom: 32, maxWidth: 520 }}>
+            Skip the queues. Get your government digital services processed fast — KRA, eCitizen, NTSA, HELB, Good Conduct & more. WhatsApp-powered, instant tracking.
+          </p>
+
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <button className="btn-primary" onClick={() => setPage("services")} style={{ fontSize: 16, padding: "14px 32px" }}>
+              ⚡ Browse Services
+            </button>
+            <button className="btn-ghost" onClick={() => setPage("tracker")} style={{ fontSize: 16, padding: "14px 32px" }}>
+              🔍 Track Request
+            </button>
+            <button onClick={() => window.open(`${WHATSAPP_LINK}?text=Hello Online Agency, I need help!`, "_blank")}
+              style={{ background: "rgba(37,211,102,.15)", color: "#25D366", border: "1px solid rgba(37,211,102,.3)", padding: "14px 28px", borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 16, transition: "all .3s" }}>
+              💬 WhatsApp Us
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 32, marginTop: 40, paddingTop: 32, borderTop: "1px solid var(--glass-border)" }}>
+            {[["500+", "Clients Served"], ["8", "Services"], ["24hr", "Fast Processing"], ["99%", "Success Rate"]].map(([num, label]) => (
+              <div key={label}>
+                <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 28, color: "var(--em)" }}>{num}</div>
+                <div style={{ fontSize: 12, color: "var(--text2)" }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <ClockWeather nightMode={nightMode} />
+          <div className="glass card animate-float" style={{ padding: 16 }}>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, letterSpacing: 1 }}>QUICK LINKS</div>
+            {[{ icon: "📱", label: "eCitizen Change" }, { icon: "🔑", label: "KRA PIN" }, { icon: "🏥", label: "SHA Services" }].map(i => (
+              <div key={i.label} onClick={() => setPage("services")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--glass-border)", cursor: "pointer", fontSize: 14, color: "var(--text2)", transition: "color .2s" }}
+                onMouseEnter={e => e.currentTarget.style.color = "var(--em)"} onMouseLeave={e => e.currentTarget.style.color = "var(--text2)"}>
+                <span>{i.icon}</span> {i.label} <span style={{ marginLeft: "auto" }}>→</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ServiceCard({ service, onOrder, showToast }) {
+  const msg = `Hello Online Agency, I want help with: ${service.name}`;
+  return (
+    <div className="glass card" style={{ border: "1px solid var(--glass-border)", position: "relative", overflow: "hidden" }}>
+      {service.popular && (
+        <div style={{ position: "absolute", top: 12, right: 12 }}>
+          <span className="badge" style={{ background: "rgba(245,158,11,.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,.3)" }}>🔥 Popular</span>
+        </div>
+      )}
+
+      <div style={{ fontSize: 40, marginBottom: 12 }}>{service.icon}</div>
+      <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, fontSize: 17, marginBottom: 6, color: "var(--text)" }}>{service.name}</div>
+      <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 14 }} className="badge" style={{ background: "rgba(255,255,255,.05)", color: "var(--text3)", border: "1px solid var(--glass-border)", display: "inline-block" }}>{service.category}</div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, fontSize: 14 }}>
+        <div><span style={{ color: "var(--em)", fontWeight: 700, fontSize: 18 }}>{service.price}</span></div>
+        <div style={{ color: "var(--text2)" }}>⏱ {service.time}</div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button className="btn-primary" style={{ flex: 1, fontSize: 13, padding: "10px 16px" }}
+          onClick={() => { window.open(waLink(msg), "_blank"); onOrder(service); }}>
+          💬 Order via WhatsApp
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ServicesSection({ requests, setRequests, profile, setProfile, setPage, showToast }) {
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+  const [showProfileModal, setShowProfileModal] = useState(!profile);
+  const [nameInput, setNameInput] = useState("");
+  const [idInput, setIdInput] = useState("");
+  const [successReq, setSuccessReq] = useState(null);
+
+  useEffect(() => { setTimeout(() => setLoading(false), 1200); }, []);
+
+  const categories = ["All", ...new Set(SERVICES.map(s => s.category))];
+  const filtered = SERVICES.filter(s =>
+    (filter === "All" || s.category === filter) &&
+    s.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSaveProfile = () => {
+    if (!nameInput.trim() || !idInput.trim()) return showToast("Please fill in all fields", "error");
+    const p = { name: nameInput.trim(), idNumber: idInput.trim() };
+    ls.set("oa_profile", p);
+    setProfile(p);
+    setShowProfileModal(false);
+    showToast("Profile saved! Welcome " + nameInput.split(" ")[0] + " 🎉");
+  };
+
+  const handleOrder = (service) => {
+    if (!profile) { setShowProfileModal(true); return; }
+    const rid = genRequestId();
+    const req = { id: rid, service: service.name, serviceId: service.id, status: "Pending", created: new Date().toISOString(), price: service.price, eta: service.time, clientName: profile.name, clientId: profile.idNumber };
+    const all = [...(ls.get("oa_requests") || []), req];
+    ls.set("oa_requests", all);
+    setRequests(all);
+    setSuccessReq(req);
+    showToast(`Request ${rid} created! ✅`);
+
+    // Simulate status progression
+    setTimeout(() => {
+      const updated = all.map(r => r.id === rid ? { ...r, status: "In Progress" } : r);
+      ls.set("oa_requests", updated);
+      setRequests(updated);
+    }, 5000);
+  };
+
+  if (showProfileModal) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "100px 24px 40px" }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 440, width: "100%", border: "1px solid var(--glass-border)" }}>
+        <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16 }}>👤</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, textAlign: "center", marginBottom: 8 }}>Quick Setup</h2>
+        <p style={{ color: "var(--text2)", textAlign: "center", marginBottom: 24, fontSize: 14 }}>We need basic info to generate your Request ID and track your services. This is stored only on your device.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <input className="input" placeholder="Full Name" value={nameInput} onChange={e => setNameInput(e.target.value)} />
+          <input className="input" placeholder="National ID / Passport Number" value={idInput} onChange={e => setIdInput(e.target.value)} />
+          <button className="btn-primary" style={{ padding: "14px", fontSize: 16 }} onClick={handleSaveProfile}>Save & Continue →</button>
+          {profile && <button className="btn-ghost" onClick={() => setShowProfileModal(false)}>Cancel</button>}
+        </div>
+        <p style={{ fontSize: 11, color: "var(--text3)", textAlign: "center", marginTop: 16 }}>🔒 Your data stays on your device only. Never shared publicly.</p>
+      </div>
+    </div>
+  );
+
+  if (successReq) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "100px 24px 40px" }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 480, width: "100%", border: "1px solid rgba(16,185,129,.3)", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Request Created!</h2>
+        <p style={{ color: "var(--text2)", marginBottom: 24 }}>Your WhatsApp message was prepared. Please send it to complete your order.</p>
+
+        <div className="glass" style={{ padding: 20, borderRadius: 14, marginBottom: 24, border: "1px solid rgba(16,185,129,.2)" }}>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>YOUR REQUEST ID</div>
+          <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 24, color: "var(--em)", letterSpacing: 2 }}>{successReq.id}</div>
+          <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 8 }}>Save this ID to track your request</div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12, fontSize: 14 }}>
+          <div className="glass" style={{ padding: 12, borderRadius: 10 }}><div style={{ color: "var(--text3)", fontSize: 11 }}>SERVICE</div><div style={{ fontWeight: 600, fontSize: 12, marginTop: 2 }}>{successReq.service}</div></div>
+          <div className="glass" style={{ padding: 12, borderRadius: 10 }}><div style={{ color: "var(--text3)", fontSize: 11 }}>ETA</div><div style={{ fontWeight: 600, fontSize: 12, marginTop: 2, color: "var(--em)" }}>{successReq.eta}</div></div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-primary" style={{ flex: 1 }} onClick={() => { setSuccessReq(null); setPage("tracker"); }}>🔍 Track Request</button>
+          <button className="btn-ghost" style={{ flex: 1 }} onClick={() => setSuccessReq(null)}>← Back to Services</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 1200, margin: "0 auto", padding: "100px 24px 60px" }}>
+      <div className="animate-fade-in" style={{ textAlign: "center", marginBottom: 48 }}>
+        <div className="tag" style={{ background: "rgba(16,185,129,.1)", color: "var(--em)", border: "1px solid rgba(16,185,129,.3)", display: "inline-block", marginBottom: 16 }}>⚡ All Services</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: "clamp(28px,4vw,48px)", marginBottom: 12 }}>
+          Government Digital Services
+        </h2>
+        <p style={{ color: "var(--text2)", fontSize: 16 }}>Fast, reliable assistance for all your Kenya government digital needs</p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "center" }}>
+        <input className="input" placeholder="🔍 Search services..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, minWidth: 200 }} />
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {categories.map(c => (
+            <button key={c} onClick={() => setFilter(c)}
+              style={{ background: filter === c ? "var(--em)" : "rgba(255,255,255,.05)", color: filter === c ? "#000" : "var(--text2)", border: `1px solid ${filter === c ? "var(--em)" : "var(--glass-border)"}`, padding: "8px 16px", borderRadius: 20, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 13, transition: "all .2s" }}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+        {loading ? Array(8).fill(0).map((_, i) => (
+          <div key={i} className="glass card skeleton" style={{ height: 220, border: "1px solid var(--glass-border)" }} />
+        )) : filtered.map(s => (
+          <ServiceCard key={s.id} service={s} onOrder={handleOrder} showToast={showToast} />
+        ))}
+      </div>
+
+      {profile && (
+        <div className="glass-strong card" style={{ marginTop: 32, border: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg,var(--em),#059669)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 15 }}>Profile Active</div>
+              <div style={{ color: "var(--text2)", fontSize: 12 }}>Your requests are being tracked</div>
+            </div>
+          </div>
+          <button className="btn-ghost" style={{ fontSize: 13, padding: "8px 16px" }} onClick={() => setShowProfileModal(true)}>Edit Profile</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TrackerPage({ requests, setRequests, showToast }) {
+  const [search, setSearch] = useState("");
+  const [found, setFound] = useState(null);
+  const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSearch = () => {
+    if (!search.trim()) return;
+    setLoading(true);
+    setSearched(true);
+    setTimeout(() => {
+      const allReqs = ls.get("oa_requests") || [];
+      const req = allReqs.find(r => r.id.toLowerCase() === search.trim().toLowerCase());
+      setFound(req || null);
+      setLoading(false);
+      if (!req) showToast("Request ID not found", "error");
+    }, 1200);
+  };
+
+  const statusSteps = ["Pending", "In Progress", "Completed"];
+  const allReqs = ls.get("oa_requests") || [];
+
+  const simulateProgress = (req) => {
+    if (req.status === "Completed") { showToast("Already completed!", "info"); return; }
+    const next = req.status === "Pending" ? "In Progress" : "Completed";
+    const updated = allReqs.map(r => r.id === req.id ? { ...r, status: next } : r);
+    ls.set("oa_requests", updated);
+    setRequests(updated);
+    setFound({ ...req, status: next });
+    showToast(`Status updated to ${next}!`);
+  };
+
+  return (
+    <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 900, margin: "0 auto", padding: "100px 24px 60px" }}>
+      <div className="animate-fade-in" style={{ textAlign: "center", marginBottom: 48 }}>
+        <div className="tag" style={{ background: "rgba(59,130,246,.1)", color: "#60a5fa", border: "1px solid rgba(59,130,246,.3)", display: "inline-block", marginBottom: 16 }}>🔍 Request Tracker</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: "clamp(28px,4vw,48px)", marginBottom: 12 }}>Track Your Request</h2>
+        <p style={{ color: "var(--text2)", fontSize: 16 }}>Enter your Request ID to see the live status of your service request</p>
+      </div>
+
+      <div className="glass-strong card" style={{ border: "1px solid var(--glass-border)", marginBottom: 32 }}>
+        <div style={{ display: "flex", gap: 12 }}>
+          <input className="input" placeholder="Enter Request ID (e.g. OA-M9XA1B-7K2P)" value={search} onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSearch()} style={{ flex: 1, fontSize: 16 }} />
+          <button className="btn-primary" style={{ padding: "14px 24px", whiteSpace: "nowrap" }} onClick={handleSearch}>
+            {loading ? "⏳" : "🔍 Track"}
+          </button>
+        </div>
+      </div>
+
+      {loading && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {[1, 2].map(i => <div key={i} className="glass card skeleton" style={{ height: 120, border: "1px solid var(--glass-border)" }} />)}
+        </div>
+      )}
+
+      {!loading && searched && !found && (
+        <div className="glass card" style={{ border: "1px solid var(--glass-border)", textAlign: "center", padding: 48 }}>
+          <div style={{ fontSize: 64, marginBottom: 16 }}>🔍</div>
+          <h3 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 8 }}>Request Not Found</h3>
+          <p style={{ color: "var(--text2)" }}>No request with that ID exists. Please check and try again.</p>
+        </div>
+      )}
+
+      {!loading && found && (
+        <div className="glass-strong card animate-fade-in" style={{ border: `1px solid ${STATUS_COLORS[found.status]}33` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
+            <div>
+              <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 22, marginBottom: 4 }}>{found.id}</div>
+              <div style={{ color: "var(--text2)", fontSize: 14 }}>{found.service}</div>
+            </div>
+            <div style={{ padding: "8px 16px", borderRadius: 20, background: STATUS_BG[found.status], border: `1px solid ${STATUS_COLORS[found.status]}`, color: STATUS_COLORS[found.status], fontWeight: 700, fontSize: 14 }}>
+              {found.status === "Pending" ? "🟡" : found.status === "In Progress" ? "🔵" : "🟢"} {found.status}
+            </div>
+          </div>
+
+          {/* Stepper */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+              {statusSteps.map((step, i) => {
+                const stepIdx = statusSteps.indexOf(found.status);
+                const done = i <= stepIdx;
+                return (
+                  <div key={step} style={{ display: "flex", alignItems: "center", flex: i < 2 ? 1 : "none" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: done ? "var(--em)" : "rgba(255,255,255,.1)", border: done ? "none" : "2px solid rgba(255,255,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, color: done ? "#000" : "var(--text3)", boxShadow: done ? "var(--neon)" : "none", transition: "all .5s" }}>
+                        {done ? "✓" : i + 1}
+                      </div>
+                      <div style={{ fontSize: 11, color: done ? "var(--em)" : "var(--text3)", marginTop: 6, whiteSpace: "nowrap" }}>{step}</div>
+                    </div>
+                    {i < 2 && <div style={{ flex: 1, height: 2, background: done && i < stepIdx ? "var(--em)" : "rgba(255,255,255,.1)", margin: "0 8px", marginBottom: 20, transition: "all .5s" }} />}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: found.status === "Pending" ? "10%" : found.status === "In Progress" ? "55%" : "100%" }} />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 20 }}>
+            {[["📅 Created", new Date(found.created).toLocaleDateString()], ["💰 Price", found.price], ["⏱ ETA", found.eta]].map(([l, v]) => (
+              <div key={l} className="glass" style={{ padding: 12, borderRadius: 12 }}>
+                <div style={{ fontSize: 11, color: "var(--text3)" }}>{l}</div>
+                <div style={{ fontWeight: 700, marginTop: 4 }}>{v}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button className="btn-primary" style={{ fontSize: 13 }} onClick={() => window.open(`${WHATSAPP_LINK}?text=Hi, I am following up on request ID: ${found.id}`, "_blank")}>
+              💬 Follow Up on WhatsApp
+            </button>
+            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => simulateProgress(found)}>
+              ⚡ Simulate Progress
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Request History */}
+      {allReqs.length > 0 && (
+        <div style={{ marginTop: 40 }}>
+          <h3 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 16 }}>📋 Request History ({allReqs.length})</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {allReqs.slice().reverse().map(req => (
+              <div key={req.id} className="glass card" style={{ border: `1px solid ${STATUS_COLORS[req.status]}22`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, cursor: "pointer" }}
+                onClick={() => { setSearch(req.id); setFound(req); setSearched(true); }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15, fontFamily: "'Poppins',sans-serif" }}>{req.id}</div>
+                  <div style={{ color: "var(--text2)", fontSize: 13 }}>{req.service}</div>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <span style={{ color: "var(--text3)", fontSize: 12 }}>{new Date(req.created).toLocaleDateString()}</span>
+                  <span style={{ padding: "4px 12px", borderRadius: 20, background: STATUS_BG[req.status], color: STATUS_COLORS[req.status], fontSize: 12, fontWeight: 700 }}>{req.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminPage({ requests, setRequests, role, setRole, showToast }) {
+  const [adminPwd, setAdminPwd] = useState("");
+  const [authenticated, setAuthenticated] = useState(role === "admin" || role === "superadmin");
+  const allReqs = ls.get("oa_requests") || [];
+  const [filter, setFilter] = useState("All");
+
+  const handleAuth = () => {
+    if (adminPwd === "ADMIN2024" || adminPwd === SUPER_ADMIN_PASSWORD) {
+      const newRole = adminPwd === SUPER_ADMIN_PASSWORD ? "superadmin" : "admin";
+      setRole(newRole);
+      ls.set("oa_role", newRole);
+      setAuthenticated(true);
+      showToast(`Welcome ${newRole === "superadmin" ? "Super Admin 🔐" : "Admin"}!`);
+    } else showToast("Invalid password", "error");
+  };
+
+  const updateStatus = (id, status) => {
+    const updated = allReqs.map(r => r.id === id ? { ...r, status } : r);
+    ls.set("oa_requests", updated);
+    setRequests(updated);
+    showToast(`Updated to ${status}!`);
+  };
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(allReqs, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `oa_requests_${Date.now()}.json`; a.click();
+    showToast("Data exported!");
+  };
+
+  if (!authenticated) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "100px 24px 40px" }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 400, width: "100%", border: "1px solid var(--glass-border)", textAlign: "center" }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>🛡️</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, marginBottom: 8 }}>Admin Access</h2>
+        <p style={{ color: "var(--text2)", marginBottom: 24, fontSize: 14 }}>Enter admin password to access the dashboard</p>
+        <input className="input" type="password" placeholder="Admin Password" value={adminPwd} onChange={e => setAdminPwd(e.target.value)} onKeyDown={e => e.key === "Enter" && handleAuth()} style={{ marginBottom: 12 }} />
+        <button className="btn-primary" style={{ width: "100%", padding: 14 }} onClick={handleAuth}>Access Dashboard →</button>
+        <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 12 }}>Demo: ADMIN2024 | Super: SUPERADMIN2024</p>
+      </div>
+    </div>
+  );
+
+  const filtered = filter === "All" ? allReqs : allReqs.filter(r => r.status === filter);
+  const stats = { total: allReqs.length, pending: allReqs.filter(r => r.status === "Pending").length, progress: allReqs.filter(r => r.status === "In Progress").length, done: allReqs.filter(r => r.status === "Completed").length };
+
+  return (
+    <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 1200, margin: "0 auto", padding: "100px 24px 60px" }}>
+      <div className="animate-fade-in" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16, marginBottom: 32 }}>
+        <div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+            <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 32 }}>Admin Dashboard</h2>
+            {role === "superadmin" && <span className="badge" style={{ background: "rgba(239,68,68,.2)", color: "#fca5a5", border: "1px solid rgba(239,68,68,.3)" }}>⚡ Super Admin</span>}
+          </div>
+          <p style={{ color: "var(--text2)" }}>Manage all service requests and client interactions</p>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-ghost" style={{ fontSize: 13 }} onClick={exportData}>📥 Export JSON</button>
+          <button style={{ background: "rgba(239,68,68,.1)", color: "#fca5a5", border: "1px solid rgba(239,68,68,.3)", padding: "10px 20px", borderRadius: 10, cursor: "pointer", fontWeight: 600, fontFamily: "'Outfit',sans-serif", fontSize: 13 }}
+            onClick={() => { ls.set("oa_role", "guest"); setRole("guest"); setAuthenticated(false); }}>Logout</button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16, marginBottom: 32 }}>
+        {[{ label: "Total Requests", val: stats.total, color: "#60a5fa", icon: "📊" }, { label: "Pending", val: stats.pending, color: "#f59e0b", icon: "🟡" }, { label: "In Progress", val: stats.progress, color: "#3b82f6", icon: "🔵" }, { label: "Completed", val: stats.done, color: "#10b981", icon: "🟢" }].map(s => (
+          <div key={s.label} className="glass card" style={{ border: `1px solid ${s.color}22`, textAlign: "center" }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>{s.icon}</div>
+            <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 36, color: s.color }}>{s.val}</div>
+            <div style={{ fontSize: 13, color: "var(--text2)" }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts (mock) */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 32 }}>
+        <div className="glass card" style={{ border: "1px solid var(--glass-border)" }}>
+          <h4 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 16 }}>📈 Service Popularity</h4>
+          {SERVICES.slice(0, 5).map((s, i) => {
+            const count = allReqs.filter(r => r.serviceId === s.id).length;
+            const max = Math.max(...SERVICES.map(sv => allReqs.filter(r => r.serviceId === sv.id).length), 1);
+            return (
+              <div key={s.id} style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                  <span style={{ color: "var(--text2)" }}>{s.icon} {s.name.slice(0, 20)}...</span>
+                  <span style={{ fontWeight: 700, color: "var(--em)" }}>{count}</span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${max > 0 ? (count / max) * 100 : 0}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="glass card" style={{ border: "1px solid var(--glass-border)" }}>
+          <h4 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 16 }}>⚡ Quick Actions</h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button className="btn-primary" onClick={() => window.open(`${WHATSAPP_LINK}?text=Hello, checking on pending requests`, "_blank")}>💬 Open WhatsApp</button>
+            <button className="btn-ghost" onClick={exportData}>📥 Export All Data</button>
+            <div className="glass" style={{ padding: 12, borderRadius: 10, fontSize: 13 }}>
+              <div style={{ color: "var(--text3)", marginBottom: 4 }}>Contact</div>
+              <div style={{ color: "var(--em)", fontWeight: 600 }}>{BUSINESS_EMAIL}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Requests Table */}
+      <div className="glass card" style={{ border: "1px solid var(--glass-border)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+          <h4 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, fontSize: 18 }}>All Requests ({filtered.length})</h4>
+          <div style={{ display: "flex", gap: 8 }}>
+            {["All", "Pending", "In Progress", "Completed"].map(f => (
+              <button key={f} onClick={() => setFilter(f)}
+                style={{ background: filter === f ? "var(--em)" : "transparent", color: filter === f ? "#000" : "var(--text2)", border: `1px solid ${filter === f ? "var(--em)" : "var(--glass-border)"}`, padding: "6px 14px", borderRadius: 20, cursor: "pointer", fontWeight: 600, fontSize: 12, fontFamily: "'Outfit',sans-serif" }}>
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+            <p>No requests yet</p>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--glass-border)" }}>
+                  {["Request ID", "Service", "Status", "Created", ...(role === "superadmin" ? ["Client", "ID No."] : []), "Actions"].map(h => (
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 12, color: "var(--text3)", fontWeight: 600, letterSpacing: .5 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.slice().reverse().map(req => (
+                  <tr key={req.id} style={{ borderBottom: "1px solid var(--glass-border)" }}>
+                    <td style={{ padding: "12px", fontFamily: "'Poppins',sans-serif", fontWeight: 700, fontSize: 13, color: "var(--em)" }}>{req.id}</td>
+                    <td style={{ padding: "12px", fontSize: 13, color: "var(--text)" }}>{req.service.slice(0, 25)}...</td>
+                    <td style={{ padding: "12px" }}>
+                      <span style={{ padding: "4px 10px", borderRadius: 20, background: STATUS_BG[req.status], color: STATUS_COLORS[req.status], fontSize: 11, fontWeight: 700 }}>{req.status}</span>
+                    </td>
+                    <td style={{ padding: "12px", fontSize: 12, color: "var(--text2)" }}>{new Date(req.created).toLocaleDateString()}</td>
+                    {role === "superadmin" && <>
+                      <td style={{ padding: "12px", fontSize: 13 }}>{req.clientName || "—"}</td>
+                      <td style={{ padding: "12px", fontSize: 12, color: "var(--text2)" }}>{req.clientId ? `****${req.clientId.slice(-4)}` : "—"}</td>
+                    </>}
+                    <td style={{ padding: "12px" }}>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {["Pending", "In Progress", "Completed"].filter(s => s !== req.status).map(s => (
+                          <button key={s} onClick={() => updateStatus(req.id, s)}
+                            style={{ background: STATUS_BG[s], color: STATUS_COLORS[s], border: `1px solid ${STATUS_COLORS[s]}33`, padding: "4px 10px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "'Outfit',sans-serif" }}>
+                            → {s.replace(" ", "\u00A0")}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SuperAdminPrompt({ setPage, setRole, showToast }) {
+  const [pwd, setPwd] = useState("");
+  const handle = () => {
+    if (pwd === SUPER_ADMIN_PASSWORD) {
+      setRole("superadmin");
+      ls.set("oa_role", "superadmin");
+      setPage("admin");
+      showToast("⚡ Super Admin Mode Activated!");
+    } else showToast("Wrong master password", "error");
+  };
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 380, width: "100%", border: "1px solid rgba(239,68,68,.3)", textAlign: "center" }}>
+        <div style={{ fontSize: 56, marginBottom: 12 }}>🔐</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, color: "#fca5a5", marginBottom: 8 }}>Super Admin Mode</h2>
+        <p style={{ color: "var(--text2)", marginBottom: 20, fontSize: 13 }}>Master password required</p>
+        <input className="input" type="password" placeholder="Master Password" value={pwd} onChange={e => setPwd(e.target.value)} onKeyDown={e => e.key === "Enter" && handle()} style={{ marginBottom: 12 }} />
+        <button style={{ background: "rgba(239,68,68,.2)", color: "#fca5a5", border: "1px solid rgba(239,68,68,.4)", padding: "14px", width: "100%", borderRadius: 12, cursor: "pointer", fontWeight: 700, fontSize: 15, fontFamily: "'Outfit',sans-serif" }} onClick={handle}>
+          Activate Super Admin
+        </button>
+        <button className="btn-ghost" style={{ width: "100%", marginTop: 10, fontSize: 13 }} onClick={() => setPage("home")}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function Chatbot({ showToast }) {
+  const [open, setOpen] = useState(false);
+  const [msgs, setMsgs] = useState([{ role: "bot", text: "Hi! 👋 I'm the Online Agency assistant. How can I help you today?" }]);
+  const [input, setInput] = useState("");
+
+  const suggestions = ["What services do you offer?", "How much does KRA PIN cost?", "How long does Good Conduct take?", "WhatsApp number?"];
+
+  const respond = (q) => {
+    const lower = q.toLowerCase();
+    let reply = "I can help you with government digital services. Type a question or visit our Services page!";
+    if (lower.includes("kra") && lower.includes("pin")) reply = "KRA PIN Retrieval costs Ksh 200 and takes about 12 hours. Would you like to order? 🔑";
+    else if (lower.includes("good conduct")) reply = "Good Conduct Application costs Ksh 600 and takes 72 hours. We handle the full process! 📋";
+    else if (lower.includes("passport")) reply = "Passport Assistance costs Ksh 800 and takes ~5 days. We guide you through every step. ✈️";
+    else if (lower.includes("whatsapp") || lower.includes("contact")) reply = `You can reach us on WhatsApp: +254100733790 or email: ${BUSINESS_EMAIL} 📱`;
+    else if (lower.includes("price") || lower.includes("cost") || lower.includes("how much")) reply = "Services range from Ksh 200 (KRA PIN) to Ksh 800 (Passport). Check the Services page for full pricing! 💰";
+    else if (lower.includes("service")) reply = "We offer: eCitizen, SHA, KRA PIN, KRA Email, NTSA, HELB, Good Conduct & Passport services! ⚡";
+    return reply;
+  };
+
+  const send = (text = input) => {
+    if (!text.trim()) return;
+    const userMsg = { role: "user", text };
+    setMsgs(p => [...p, userMsg]);
+    setInput("");
+    setTimeout(() => setMsgs(p => [...p, { role: "bot", text: respond(text) }]), 800);
+  };
+
+  return (
+    <div className="chatbot">
+      {open && (
+        <div className="glass-strong animate-fade-in" style={{ borderRadius: 20, border: "1px solid var(--glass-border)", marginBottom: 12, overflow: "hidden" }}>
+          <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(16,185,129,.08)" }}>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>🤖 AI Assistant</div>
+            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "var(--text2)", cursor: "pointer", fontSize: 18 }}>✕</button>
+          </div>
+          <div style={{ height: 220, overflowY: "auto", padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+            {msgs.map((m, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{ maxWidth: "85%", padding: "10px 14px", borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.role === "user" ? "var(--em)" : "rgba(255,255,255,.08)", color: m.role === "user" ? "#000" : "var(--text)", fontSize: 13, fontWeight: m.role === "user" ? 600 : 400 }}>
+                  {m.text}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: "8px 12px", borderTop: "1px solid var(--glass-border)", display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {suggestions.map(s => (
+              <button key={s} onClick={() => send(s)} style={{ background: "rgba(16,185,129,.1)", color: "var(--em)", border: "1px solid rgba(16,185,129,.2)", padding: "4px 10px", borderRadius: 20, fontSize: 11, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>{s}</button>
+            ))}
+          </div>
+          <div style={{ padding: "10px 12px", borderTop: "1px solid var(--glass-border)", display: "flex", gap: 8 }}>
+            <input className="input" placeholder="Ask me anything..." value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} style={{ fontSize: 13, padding: "10px 14px" }} />
+            <button className="btn-primary" style={{ padding: "10px 14px", fontSize: 13 }} onClick={() => send()}>→</button>
+          </div>
+        </div>
+      )}
+      <button onClick={() => setOpen(!open)} style={{ background: "linear-gradient(135deg,var(--em),#059669)", border: "none", borderRadius: 50, width: 48, height: 48, cursor: "pointer", fontSize: 22, boxShadow: "var(--neon)", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform .3s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+        {open ? "✕" : "🤖"}
+      </button>
+    </div>
+  );
+}
+
+function ScrollProgress() {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const el = document.documentElement;
+      setProgress((el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, zIndex: 200 }}>
+      <div style={{ height: "100%", background: "linear-gradient(90deg,var(--em),#34d399)", width: `${progress}%`, transition: "width .1s" }} />
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+export default function App() {
+  injectStyles();
+
+  const [page, setPage] = useState("home");
+  const [profile, setProfile] = useState(ls.get("oa_profile"));
+  const [requests, setRequests] = useState(ls.get("oa_requests") || []);
+  const [role, setRole] = useState(ls.get("oa_role") || "guest");
+  const [nightMode, setNightMode] = useState(getNightMode());
+  const { toasts, show: showToast } = useToast();
+  const season = getSeason();
+
+  useEffect(() => {
+    const t = setInterval(() => setNightMode(getNightMode()), 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  // URL-based super admin
+  useEffect(() => {
+    if (window.location.search.includes("mode=super")) setPage("superadmin-prompt");
+  }, []);
+
+  const classes = [nightMode ? "night" : "", season !== "normal" ? season : ""].filter(Boolean).join(" ");
+
+  const renderPage = () => {
+    switch (page) {
+      case "home": return <HeroSection setPage={setPage} profile={profile} nightMode={nightMode} />;
+      case "services": return <ServicesSection requests={requests} setRequests={setRequests} profile={profile} setProfile={setProfile} setPage={setPage} showToast={showToast} />;
+      case "tracker": return <TrackerPage requests={requests} setRequests={setRequests} showToast={showToast} />;
+      case "admin": return <AdminPage requests={requests} setRequests={setRequests} role={role} setRole={setRole} showToast={showToast} />;
+      case "superadmin-prompt": return <SuperAdminPrompt setPage={setPage} setRole={setRole} showToast={showToast} />;
+      default: return <HeroSection setPage={setPage} profile={profile} nightMode={nightMode} />;
+    }
+  };
+
+  return (
+    <div className={classes} style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <ScrollProgress />
+      <Navbar page={page} setPage={setPage} role={role} nightMode={nightMode} />
+      <main className="page-section">
+        {renderPage()}
+      </main>
+
+      {/* Footer */}
+      <footer style={{ borderTop: "1px solid var(--glass-border)", padding: "32px 24px", background: "var(--bg2)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 20, marginBottom: 4 }}>
+              <span style={{ color: "var(--em)" }}>Online</span> Agency
+            </div>
+            <div style={{ color: "var(--text2)", fontSize: 13 }}>Kenya's trusted digital government services platform</div>
+          </div>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            {["home", "services", "tracker"].map(p => (
+              <button key={p} onClick={() => setPage(p)} style={{ background: "none", border: "none", color: "var(--text2)", cursor: "pointer", fontSize: 14, fontFamily: "'Outfit',sans-serif", textTransform: "capitalize" }}
+                onMouseEnter={e => e.currentTarget.style.color = "var(--em)"} onMouseLeave={e => e.currentTarget.style.color = "var(--text2)"}>
+                {p}
+              </button>
+            ))}
+          </div>
+          <div style={{ color: "var(--text3)", fontSize: 12 }}>© 2024 Online Agency · {BUSINESS_EMAIL}</div>
+        </div>
+      </footer>
+
+      <WaFloat />
+      <Chatbot showToast={showToast} />
+      <ToastContainer toasts={toasts} />
+    </div>
+  );
+}
