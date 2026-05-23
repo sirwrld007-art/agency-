@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Cyber Services Agency - KRA, eCitizen, SHA & NTSA Assistance</title>
+    <meta name="description" content="Professional KRA, eCitizen, SHA, NTSA and business registration services. Fast, secure and affordable.">
+    <link rel="manifest" href="#" id="manifestLink">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a;
+            --text-muted: #64748b; --primary-btn: #0f172a; --primary-btn-text: #ffffff;
+            --border-color: #e2e8f0; --font-size-base: 15px;
+        }
+        [data-theme="dark"] {
+            --bg-color: #080e1f; --card-bg: #0f1b33; --text-main: #e8f0fe;
+            --text-muted: #7a90b8; --primary-btn: #3b82f6; --primary-btn-text: #ffffff;
+            --border-color: #1a2a4a;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Space Grotesk', sans-serif; font-size: var(--font-size-base); background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s, font-size 0.2s; }
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
+
+        /* ── Header ── */
+        .header-status-bar { display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 30px; margin-bottom: 16px; gap: 8px; flex-wrap: wrap; }
+        .status-info { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; }
+        .pulse-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; position: relative; flex-shrink: 0; }
+        .pulse-dot::after { content: ''; position: absolute; inset: 0; background-color: #10b981; border-radius: 50%; animation: pulse 1.5s infinite ease-in-out; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+        .live-clock { color: #60a5fa; background-color: rgba(96,165,250,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 11px; }
+        .header-controls { display: flex; gap: 5px; flex-wrap: wrap; }
+        .ctrl-btn { font-family: 'Space Grotesk', sans-serif; background-color: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 9px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.2s; white-space: nowrap; }
+        .ctrl-btn:hover { border-color: #3b82f6; }
+
+        /* ── Offline banner ── */
+        .offline-banner { display: none; background: #ef4444; color: white; text-align: center; padding: 8px; font-size: 12px; font-weight: 700; border-radius: 10px; margin-bottom: 12px; }
+
+        /* ── Chat bubble ── */
+        .chat-bubble { position: fixed; bottom: 90px; right: 20px; z-index: 1000; max-width: 230px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px 16px 4px 16px; padding: 12px 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); display: none; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-bubble p { margin: 0 0 10px; font-size: 13px; line-height: 1.4; }
+        .chat-bubble-close { position: absolute; top: 6px; right: 10px; cursor: pointer; font-size: 14px; color: var(--text-muted); background: none; border: none; font-family: inherit; }
+        .chat-bubble-btn { display: block; background-color: #25d366; color: white; text-decoration: none; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; text-align: center; }
+
+        /* ── Float WhatsApp ── */
+        .float-wa { position: fixed; bottom: 24px; right: 20px; z-index: 999; background-color: #25d366; color: white; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.4); cursor: pointer; text-decoration: none; animation: floatPulse 3s infinite ease-in-out; }
+        @keyframes floatPulse { 0%,100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4); } 50% { box-shadow: 0 6px 28px rgba(37,211,102,0.65); } }
+
+        /* ── Trust bar ── */
+        .trust-bar { display: flex; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.08)); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; flex-wrap: wrap; }
+        .trust-stat { text-align: center; }
+        .trust-stat-num { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #60a5fa; display: block; }
+        .trust-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .trust-divider { width: 1px; height: 36px; background-color: var(--border-color); }
+        .star-row { font-size: 13px; }
+
+        /* ── Verified badges ── */
+        .verified-bar { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        .verified-badge { display: flex; align-items: center; gap: 6px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+        .verified-badge span.check { color: #10b981; font-size: 13px; }
+
+        /* ── Animated counter ── */
+        .counter-bar { display: flex; justify-content: center; gap: 20px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+        .counter-item { text-align: center; }
+        .counter-num { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #f59e0b; display: block; }
+        .counter-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+
+        /* ── Deadline ── */
+        .deadline-card { background: linear-gradient(135deg, #1e1040, #0f1b33); border: 1px solid #7c3aed44; border-radius: 16px; padding: 16px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
+        [data-theme="light"] .deadline-card { background: linear-gradient(135deg, #f5f3ff, #ede9fe); }
+        .deadline-icon { font-size: 28px; flex-shrink: 0; }
+        .deadline-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #a78bfa; font-weight: 700; margin-bottom: 3px; }
+        .deadline-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .deadline-timer { font-family: monospace; font-size: 18px; font-weight: 800; color: #f59e0b; letter-spacing: 2px; }
+        .deadline-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        /* ── Tip ── */
+        .tip-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; }
+        .tip-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #f59e0b; margin-bottom: 5px; }
+        .tip-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* ── Section title ── */
+        .section-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin: 28px 0 12px; letter-spacing: -0.3px; }
+
+        /* ── Quiz ── */
+        .quiz-box { background-color: var(--card-bg); border: 1px solid #3b82f6; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .quiz-box h3 { font-family: 'Syne', sans-serif; margin: 0 0 14px; font-size: 15px; }
+        .quiz-step { display: none; }
+        .quiz-step.active { display: block; }
+        .quiz-q { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+        .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+        .quiz-opt { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 11px 14px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; font-family: 'Space Grotesk', sans-serif; color: var(--text-main); transition: all 0.18s; }
+        .quiz-opt:hover { border-color: #3b82f6; color: #60a5fa; }
+        .quiz-result { background-color: rgba(59,130,246,0.08); border: 1px solid #3b82f644; border-radius: 12px; padding: 14px; margin-top: 12px; display: none; }
+        .quiz-result-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; color: #60a5fa; }
+        .quiz-result-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .quiz-restart { margin-top: 12px; font-family: 'Space Grotesk', sans-serif; background: none; border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 700; }
+
+        /* ── Services ── */
+        .services-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .service-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 18px; cursor: pointer; transition: border-color 0.2s, transform 0.1s; }
+        .service-card:hover { border-color: #3b82f6; transform: translateY(-1px); }
+        .service-card.active { border-color: #3b82f6; background-color: rgba(59,130,246,0.05); }
+        .service-card-header { display: flex; align-items: center; }
+        .service-icon { font-size: 20px; margin-right: 10px; }
+        .service-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; flex: 1; }
+        .service-toggle { font-size: 11px; color: var(--text-muted); transition: transform 0.2s; }
+        .service-card.active .service-toggle { transform: rotate(180deg); }
+        .service-desc { font-size: 12px; color: var(--text-muted); margin: 4px 0 0 30px; line-height: 1.5; }
+        .service-detail { display: none; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; }
+        .service-card.active .service-detail { display: block; }
+        .service-detail-row { font-size: 13px; margin-bottom: 7px; color: var(--text-muted); display: flex; gap: 6px; }
+        .service-detail-row strong { color: var(--text-main); min-width: 110px; flex-shrink: 0; }
+        .chips-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); }
+        .contact-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 20px; cursor: pointer; text-decoration: none; border: none; font-family: 'Space Grotesk', sans-serif; transition: opacity 0.2s; }
+        .contact-chip:hover { opacity: 0.8; }
+        .chip-wa { background-color: rgba(37,211,102,0.12); color: #25d366; }
+        .chip-email { background-color: rgba(251,146,60,0.12); color: #fb923c; }
+        .chip-call { background-color: rgba(168,85,247,0.12); color: #a855f7; }
+
+        /* ── Status Tracker ── */
+        .tracker-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .tracker-box h3 { font-family: 'Syne', sans-serif; margin: 0 0 12px; font-size: 15px; }
+        .tracker-input-row { display: flex; gap: 8px; }
+        .tracker-input { font-family: 'Space Grotesk', sans-serif; flex: 1; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); }
+        .tracker-input:focus { outline: none; border-color: #3b82f6; }
+        .tracker-btn { font-family: 'Space Grotesk', sans-serif; padding: 11px 16px; background-color: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .tracker-result { margin-top: 12px; font-size: 13px; padding: 12px; border-radius: 10px; display: none; line-height: 1.6; }
+        .tracker-result.found { background-color: rgba(16,185,129,0.1); border: 1px solid #10b98144; color: #10b981; }
+        .tracker-result.not-found { background-color: rgba(239,68,68,0.1); border: 1px solid #ef444444; color: #ef4444; }
+
+        /* ── Order Form ── */
+        .hero-card { background-color: var(--card-bg); border-radius: 24px; padding: 26px 20px; text-align: center; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        h1 { font-family: 'Syne', sans-serif; font-size: 23px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.5px; line-height: 1.2; }
+        .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; line-height: 1.4; }
+        .form-group { text-align: left; margin-bottom: 14px; }
+        label { display: block; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; margin-bottom: 5px; color: var(--text-muted); }
+        input, select, textarea { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); transition: border-color 0.2s; resize: none; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; }
+        .upload-box { border: 2px dashed var(--border-color); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; background-color: var(--bg-color); }
+        .upload-box:hover { border-color: #3b82f6; }
+        .upload-box input[type="file"] { display: none; }
+        .upload-preview { margin-top: 10px; display: none; }
+        .upload-preview img { max-width: 100%; border-radius: 8px; max-height: 160px; object-fit: cover; }
+        .btn { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 13px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 9px; display: flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none; transition: transform 0.1s, opacity 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-dark { background-color: var(--primary-btn); color: var(--primary-btn-text); }
+        .btn-wa { background-color: #25d366; color: white; box-shadow: 0 4px 12px rgba(37,211,102,0.2); }
+        .btn-call { background-color: #7c3aed; color: white; }
+        .btn-print { background-color: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+        .wa-icon { width: 18px; height: 18px; fill: white; }
+        .order-ref { display: none; margin-top: 12px; background-color: rgba(59,130,246,0.08); border: 1px dashed #3b82f644; border-radius: 10px; padding: 12px; text-align: center; }
+        .order-ref-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+        .order-ref-code { font-family: monospace; font-size: 22px; font-weight: 800; color: #60a5fa; letter-spacing: 3px; }
+        .order-ref-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ── Booking ── */
+        .booking-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .booking-box h3 { font-family: 'Syne', sans-serif; margin: 0 0 14px; font-size: 15px; }
+        .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+        .slot-btn { font-family: 'Space Grotesk', sans-serif; padding: 9px 6px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; background-color: var(--bg-color); color: var(--text-main); transition: all 0.18s; text-align: center; }
+        .slot-btn:hover:not(.booked) { border-color: #3b82f6; color: #60a5fa; }
+        .slot-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        .slot-btn.booked { background-color: rgba(239,68,68,0.1); color: #ef4444; border-color: #ef444433; cursor: not-allowed; font-style: italic; }
+        .slot-confirm-btn { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 11px; background-color: #10b981; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; display: none; }
+        .slot-confirmed { display: none; background-color: rgba(16,185,129,0.1); border: 1px solid #10b98144; border-radius: 10px; padding: 12px; font-size: 13px; color: #10b981; text-align: center; margin-top: 10px; }
+
+        /* ── Notification opt-in ── */
+        .notif-box { background-color: var(--card-bg); border: 1px solid #f59e0b44; border-radius: 14px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; }
+        .notif-icon { font-size: 26px; flex-shrink: 0; }
+        .notif-text { flex: 1; }
+        .notif-text h4 { margin: 0 0 3px; font-size: 14px; font-weight: 700; }
+        .notif-text p { margin: 0; font-size: 12px; color: var(--text-muted); }
+        .notif-btn { font-family: 'Space Grotesk', sans-serif; padding: 8px 14px; background-color: #f59e0b; color: #0f172a; border: none; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap; }
+
+        /* ── Referral ── */
+        .referral-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; text-align: center; }
+        .referral-box h3 { font-family: 'Syne', sans-serif; font-size: 15px; margin: 0 0 6px; }
+        .referral-box p { font-size: 12px; color: var(--text-muted); margin: 0 0 14px; line-height: 1.5; }
+        .share-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .share-btn { font-family: 'Space Grotesk', sans-serif; padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; background-color: var(--bg-color); color: var(--text-main); transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
+        .share-btn:hover { border-color: #3b82f6; color: #60a5fa; }
+
+        /* ── Google Review ── */
+        .google-review-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: #fff; color: #1a1a1a; border: 1px solid #dadce0; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; margin-bottom: 20px; transition: box-shadow 0.2s; }
+        .google-review-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        [data-theme="dark"] .google-review-btn { background-color: var(--card-bg); color: var(--text-main); border-color: var(--border-color); }
+
+        /* ── WhatsApp guide ── */
+        .wa-guide-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .wa-guide-box h3 { font-family: 'Syne', sans-serif; font-size: 15px; margin: 0 0 12px; }
+        .wa-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+        .wa-step-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+        .wa-step-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .wa-step-text strong { color: var(--text-main); display: block; margin-bottom: 2px; }
+
+        /* ── Location map ── */
+        .location-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
+        .location-map-placeholder { background: linear-gradient(135deg, #0f1b33, #1a2a4a); height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; position: relative; }
+        [data-theme="light"] .location-map-placeholder { background: linear-gradient(135deg, #dbeafe, #ede9fe); }
+        .map-pin { font-size: 36px; animation: mapBounce 2s infinite ease-in-out; }
+        @keyframes mapBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        .location-info { padding: 14px 18px; }
+        .location-info h4 { font-family: 'Syne', sans-serif; margin: 0 0 4px; font-size: 14px; }
+        .location-info p { margin: 0 0 10px; font-size: 12px; color: var(--text-muted); }
+
+        /* ── Hours ── */
+        .hours-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .hours-header { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .hours-row { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+        .hours-row:last-child { border-bottom: none; color: #ef4444; }
+        .hours-label { font-weight: 600; }
+        .hours-value { color: var(--text-muted); font-weight: 500; }
+
+        /* ── Checklist ── */
+        .checklist-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .checklist-summary { font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .checklist-content { margin-top: 12px; font-size: 13px; line-height: 1.8; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 10px; display: none; }
+
+        /* ── Payment ── */
+        .mpesa-card { background-color: var(--card-bg); border: 1px solid #10b981; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .mpesa-header { font-weight: 700; color: #10b981; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mpesa-steps { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; padding-left: 18px; }
+
+        /* ── Steps ── */
+        .steps-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .step-item { display: flex; gap: 14px; background-color: var(--card-bg); padding: 16px; border-radius: 16px; border: 1px solid var(--border-color); }
+        .step-number { background-color: #3b82f6; color: white; font-weight: 700; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+        .step-text h4 { margin: 0 0 3px; font-size: 14px; font-weight: 700; }
+        .step-text p { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+        /* ── Reviews ── */
+        .review-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+        .review-stars { color: #f59e0b; font-size: 13px; margin-bottom: 5px; }
+        .review-text { font-size: 13px; line-height: 1.5; margin-bottom: 7px; }
+        .review-user { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+
+        /* ── FAQ ── */
+        .faq-item { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+        .faq-question { padding: 14px 16px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-answer { padding: 0 16px 14px; font-size: 13px; color: var(--text-muted); display: none; line-height: 1.5; border-top: 1px solid var(--border-color); padding-top: 10px; }
+
+        /* ── Admin panel ── */
+        .admin-trigger { text-align: center; margin-bottom: 20px; }
+        .admin-trigger button { font-family: 'Space Grotesk', sans-serif; background: none; border: 1px dashed var(--border-color); color: var(--text-muted); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: 700; }
+        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
+        .admin-overlay.open { display: flex; }
+        .admin-panel { background-color: var(--card-bg); border-radius: 20px; padding: 24px; width: 90%; max-width: 420px; border: 1px solid var(--border-color); max-height: 85vh; overflow-y: auto; }
+        .admin-panel h3 { font-family: 'Syne', sans-serif; margin: 0 0 16px; }
+        .admin-input { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin-bottom: 10px; }
+        .admin-input:focus { outline: none; border-color: #3b82f6; }
+        .admin-login-btn { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 11px; background-color: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .admin-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); font-family: inherit; }
+        .admin-order-row { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 8px; font-size: 13px; }
+        .admin-order-row strong { color: #60a5fa; }
+        .admin-status-select { font-family: 'Space Grotesk', sans-serif; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-color); color: var(--text-main); font-size: 12px; cursor: pointer; margin-top: 6px; }
+        .admin-empty { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px; }
+
+        /* ── Agent preview ── */
+        .agent-panel-demo { background-color: var(--card-bg); border-radius: 20px; padding: 18px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .demo-badge { background-color: rgba(59,130,246,0.1); color: #60a5fa; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .request-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .status-badge { background-color: rgba(16,185,129,0.15); color: #10b981; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+
+        /* ── Font size controls ── */
+        .font-controls { display: flex; gap: 5px; align-items: center; }
+        .font-btn { font-family: 'Space Grotesk', sans-serif; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main); width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+
+        footer { text-align: center; padding: 20px 0 80px; font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+        .sw { display: none; }
+        @media print { .float-wa, .chat-bubble, .header-controls, .admin-trigger, .btn-print { display: none !important; } body { background: white !important; color: black !important; } }
+    </style>
+</head>
+<body>
+<div class="offline-banner" id="offlineBanner">⚠️ You are offline. Some features may not work.</div>
+<div class="container">
+
+<!-- ── Header ── -->
+<div class="header-status-bar">
+    <div class="status-info">
+        <div class="pulse-dot"></div>
+        <span style="color:#10b981" class="en">ONLINE</span><span style="color:#10b981" class="sw">MTANDAONI</span>
+        <span style="color:var(--text-muted); font-weight:normal">|</span>
+        <span id="liveClock" class="live-clock">00:00:00</span>
+    </div>
+    <div class="header-controls">
+        <div class="font-controls">
+            <button class="font-btn" onclick="changeFontSize(-1)" title="Smaller">A-</button>
+            <button class="font-btn" onclick="changeFontSize(1)" title="Larger">A+</button>
+        </div>
+        <button class="ctrl-btn" id="langToggle">🇰🇪 SW</button>
+        <button class="ctrl-btn" id="themeToggle">☀️</button>
+        <button class="ctrl-btn" onclick="window.print()">🖨️</button>
+    </div>
+</div>
+
+<!-- ── Offline Banner handled by JS ── -->
+
+<!-- ── Trust Bar ── -->
+<div class="trust-bar">
+    <div class="trust-stat"><span class="trust-stat-num">4.9</span><div class="star-row">⭐⭐⭐⭐⭐</div><span class="trust-stat-label en">Rating</span><span class="trust-stat-label sw">Tathmini</span></div>
+    <div class="trust-divider"></div>
+    <div class="trust-stat"><span class="trust-stat-num" id="ctrClients">0</span><span class="trust-stat-label en">Clients Served</span><span class="trust-stat-label sw">Wateja</span></div>
+    <div class="trust-divider"></div>
+    <div class="trust-stat"><span class="trust-stat-num">98%</span><span class="trust-stat-label en">Success Rate</span><span class="trust-stat-label sw">Mafanikio</span></div>
+</div>
+
+<!-- ── Verified Badges ── -->
+<div class="verified-bar">
+    <div class="verified-badge"><span class="check">✓</span> KRA Certified</div>
+    <div class="verified-badge"><span class="check">✓</span> eCitizen Partner</div>
+    <div class="verified-badge"><span class="check">✓</span> SHA Registered</div>
+    <div class="verified-badge"><span class="check">✓</span> NTSA Authorised</div>
+</div>
+
+<!-- ── Animated Counters ── -->
+<div class="counter-bar">
+    <div class="counter-item"><span class="counter-num" id="ctrReturns">0</span><span class="counter-label en">Returns Filed</span><span class="counter-label sw">Marejesho</span></div>
+    <div class="counter-item"><span class="counter-num" id="ctrEcit">0</span><span class="counter-label en">eCitizen Cases</span><span class="counter-label sw">Kesi za eCitizen</span></div>
+    <div class="counter-item"><span class="counter-num" id="ctrBiz">0</span><span class="counter-label en">Businesses Reg.</span><span class="counter-label sw">Biashara</span></div>
+</div>
+
+<!-- ── Deadline Countdown ── -->
+<div class="deadline-card">
+    <div class="deadline-icon">⏳</div>
+    <div>
+        <div class="deadline-label en">KRA Deadline Alert</div><div class="deadline-label sw">Onyo la Muda wa KRA</div>
+        <div class="deadline-title en">Annual Returns Due: June 30, 2026</div><div class="deadline-title sw">Marejesho ya Mwaka: Juni 30, 2026</div>
+        <div class="deadline-timer" id="countdownTimer">-- : -- : --</div>
+        <div class="deadline-sub en">Days : Hours : Minutes — avoid penalties!</div><div class="deadline-sub sw">Siku : Masaa : Dakika — epuka faini!</div>
+    </div>
+</div>
+
+<!-- ── Tip ── -->
+<div class="tip-box">
+    <div class="tip-label en">💡 Did You Know?</div><div class="tip-label sw">💡 Je, Unajua?</div>
+    <div class="tip-text en" id="tipEn"></div><div class="tip-text sw" id="tipSw"></div>
+</div>
+
+<!-- ── Notification Opt-in ── -->
+<div class="notif-box">
+    <div class="notif-icon">🔔</div>
+    <div class="notif-text">
+        <h4><span class="en">Get KRA Deadline Reminders</span><span class="sw">Pokea Vikumbusho vya KRA</span></h4>
+        <p class="en">We'll notify you before the June 30 deadline via WhatsApp.</p>
+        <p class="sw">Tutakutumia ukumbusho kabla ya Juni 30 kwa WhatsApp.</p>
+    </div>
+    <button class="notif-btn" onclick="notifOptIn()"><span class="en">Notify Me</span><span class="sw">Niarifu</span></button>
+</div>
+
+<!-- ── What Service Do I Need? Quiz ── -->
+<div class="quiz-box">
+    <h3>🤔 <span class="en">What service do I need?</span><span class="sw">Ninahitaji huduma gani?</span></h3>
+    <div class="quiz-step active" id="qStep0">
+        <div class="quiz-q en">What do you need help with?</div><div class="quiz-q sw">Unahitaji msaada na nini?</div>
+        <div class="quiz-options">
+            <button class="quiz-opt" onclick="quizAnswer(0,0)">🧾 <span class="en">Tax / KRA related</span><span class="sw">Kodi / KRA</span></button>
+            <button class="quiz-opt" onclick="quizAnswer(0,1)">🌐 <span class="en">Government portal / ID</span><span class="sw">Tovuti ya serikali / Kitambulisho</span></button>
+            <button class="quiz-opt" onclick="quizAnswer(0,2)">🏥 <span class="en">Health insurance / SHA</span><span class="sw">Bima ya afya / SHA</span></button>
+            <button class="quiz-opt" onclick="quizAnswer(0,3)">🚗 <span class="en">Driving / vehicle / NTSA</span><span class="sw">Leseni / gari / NTSA</span></button>
+            <button class="quiz-opt" onclick="quizAnswer(0,4)">🏢 <span class="en">Start a business</span><span class="sw">Anzisha biashara</span></button>
+        </div>
+    </div>
+    <div class="quiz-step" id="qStep1">
+        <div class="quiz-q en">Do you already have a KRA PIN?</div><div class="quiz-q sw">Je, una KRA PIN tayari?</div>
+        <div class="quiz-options">
+            <button class="quiz-opt" onclick="quizResult('KRA Nil Returns','You need to file Nil Returns. Takes about 10 minutes. Just bring your National ID and KRA PIN.')">✅ <span class="en">Yes — I have a PIN</span><span class="sw">Ndiyo — nina PIN</span></button>
+            <button class="quiz-opt" onclick="quizResult('KRA PIN Registration','You need a new KRA PIN. We just need your ID Number and Date of Birth.')">❌ <span class="en">No — I need a PIN</span><span class="sw">Hapana — ninahitaji PIN</span></button>
+            <button class="quiz-opt" onclick="quizResult('KRA PIN Retrieval','You need KRA PIN Retrieval. Just provide your National ID number.')">🔍 <span class="en">I lost / forgot my PIN</span><span class="sw">Nimesahau PIN yangu</span></button>
+        </div>
+    </div>
+    <div class="quiz-result" id="quizResult">
+        <div class="quiz-result-title" id="quizResultTitle"></div>
+        <div class="quiz-result-desc" id="quizResultDesc"></div>
+        <button class="quiz-restart" onclick="quizRestart()">↩ <span class="en">Start over</span><span class="sw">Anza upya</span></button>
+    </div>
+</div>
+
+<!-- ── Services ── -->
+<h2 class="section-title"><span class="en">Our Services</span><span class="sw">Huduma Zetu</span></h2>
+<div class="services-grid">
+
+    <div class="service-card" onclick="toggleService(this)">
+        <div class="service-card-header"><span class="service-icon">🏛️</span><span class="service-name">KRA Services</span><span class="service-toggle">▼</span></div>
+        <p class="service-desc en">PIN registration, nil & income returns, PIN retrieval.</p>
+        <p class="service-desc sw">Usajili wa PIN, marejesho ya sifuri na mapato.</p>
+        <div class="service-detail">
+            <div class="service-detail-row"><strong>Nil Returns:</strong><span>10 mins — National ID & KRA PIN</span></div>
+            <div class="service-detail-row"><strong>Income Returns:</strong><span>25 mins — ID, PIN & income details</span></div>
+            <div class="service-detail-row"><strong>New PIN:</strong><span>ID Number & Date of Birth</span></div>
+            <div class="service-detail-row"><strong>PIN Retrieval:</strong><span>National ID Number only</span></div>
+            <div class="chips-row">
+                <a class="contact-chip chip-email" href="mailto:individual@kraservice.co.ke">✉ Individual</a>
+                <a class="contact-chip chip-email" href="mailto:nonindividual@kraservice.co.ke">✉ Non-Individual</a>
+                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
+                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="service-card" onclick="toggleService(this)">
+        <div class="service-card-header"><span class="service-icon">🌐</span><span class="service-name">eCitizen Services</span><span class="service-toggle">▼</span></div>
+        <p class="service-desc en">Account recovery, new registration, portal help.</p>
+        <p class="service-desc sw">Urejeshaji wa akaunti na usaidizi wa eCitizen.</p>
+        <div class="service-detail">
+            <div class="service-detail-row"><strong>Recovery:</strong><span>30 mins — ID Number & phone access</span></div>
+            <div class="service-detail-row"><strong>New Account:</strong><span>National ID & passport photo</span></div>
+            <div class="chips-row">
+                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
+                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="service-card" onclick="toggleService(this)">
+        <div class="service-card-header"><span class="service-icon">🏥</span><span class="service-name">SHA Services</span><span class="service-toggle">▼</span></div>
+        <p class="service-desc en">SHA registration, dependants & contribution updates.</p>
+        <p class="service-desc sw">Usajili wa SHA, tegemezi na masasisho ya mchango.</p>
+        <div class="service-detail">
+            <div class="service-detail-row"><strong>Registration:</strong><span>New SHA member setup</span></div>
+            <div class="service-detail-row"><strong>Dependants:</strong><span>Adding family members</span></div>
+            <div class="service-detail-row"><strong>Contributions:</strong><span>Verification & updates</span></div>
+            <div class="chips-row">
+                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
+                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="service-card" onclick="toggleService(this)">
+        <div class="service-card-header"><span class="service-icon">🚗</span><span class="service-name">NTSA Services</span><span class="service-toggle">▼</span></div>
+        <p class="service-desc en">Smart DL, vehicle transfer, inspection & TIMs.</p>
+        <p class="service-desc sw">Leseni ya Smart, uhamisho wa gari na TIMs.</p>
+        <div class="service-detail">
+            <div class="service-detail-row"><strong>Smart DL:</strong><span>Smart driving licence application</span></div>
+            <div class="service-detail-row"><strong>Transfer:</strong><span>Vehicle ownership transfer</span></div>
+            <div class="service-detail-row"><strong>Inspection:</strong><span>Vehicle inspection booking</span></div>
+            <div class="service-detail-row"><strong>TIMs:</strong><span>Account setup & recovery</span></div>
+            <div class="chips-row">
+                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
+                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="service-card" onclick="toggleService(this)">
+        <div class="service-card-header"><span class="service-icon">🏢</span><span class="service-name">Business Registration</span><span class="service-toggle">▼</span></div>
+        <p class="service-desc en">Business name search, registration & certification.</p>
+        <p class="service-desc sw">Utafutaji wa jina la biashara, usajili na cheti.</p>
+        <div class="service-detail">
+            <div class="service-detail-row"><strong>Name Search:</strong><span>24 hrs — 3 names required</span></div>
+            <div class="service-detail-row"><strong>Registration:</strong><span>ID, KRA PIN & business details</span></div>
+            <div class="chips-row">
+                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
+                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Status Tracker ── -->
+<h2 class="section-title"><span class="en">Track Your Request</span><span class="sw">Fuatilia Ombi Lako</span></h2>
+<div class="tracker-box">
+    <h3>🔍 <span class="en">Enter your reference code</span><span class="sw">Ingiza nambari ya rejea</span></h3>
+    <div class="tracker-input-row">
+        <input class="tracker-input" id="trackerInput" placeholder="e.g. CSA-2847" maxlength="10">
+        <button class="tracker-btn" onclick="checkStatus()"><span class="en">Check</span><span class="sw">Angalia</span></button>
+    </div>
+    <div class="tracker-result" id="trackerResult"></div>
+    <p style="font-size:11px;color:var(--text-muted);margin:8px 0 0"><span class="en">Reference code is generated when you submit an order below.</span><span class="sw">Nambari ya rejea hutolewa unapoweka ombi hapa chini.</span></p>
+</div>
+
+<!-- ── Book a Time Slot ── -->
+<h2 class="section-title"><span class="en">Book a Time Slot</span><span class="sw">Panga Wakati</span></h2>
+<div class="booking-box">
+    <h3>📅 <span class="en">Pick an available slot for today</span><span class="sw">Chagua nafasi inayopatikana leo</span></h3>
+    <div class="slots-grid" id="slotsGrid"></div>
+    <button class="slot-confirm-btn" id="slotConfirmBtn" onclick="confirmSlot()"><span class="en">✓ Confirm Booking via WhatsApp</span><span class="sw">✓ Thibitisha Nafasi kwa WhatsApp</span></button>
+    <div class="slot-confirmed" id="slotConfirmed"></div>
+</div>
+
+<!-- ── Order Form ── -->
+<div class="hero-card">
+    <h1><span class="en">Send a Request</span><span class="sw">Tuma Ombi</span></h1>
+    <p class="subtitle en">Fill in your details — your reference code is generated instantly.</p>
+    <p class="subtitle sw">Jaza maelezo yako — nambari ya rejea itatolewa mara moja.</p>
+    <div class="form-group">
+        <label><span class="en">Your Name</span><span class="sw">Jina Lako</span></label>
+        <input type="text" id="clientName" placeholder="e.g. Mwangi J.">
+    </div>
+    <div class="form-group">
+        <label><span class="en">Phone Number</span><span class="sw">Nambari ya Simu</span></label>
+        <input type="tel" id="clientPhone" placeholder="07XX XXX XXX">
+    </div>
+    <div class="form-group">
+        <label><span class="en">Select Service</span><span class="sw">Chagua Huduma</span></label>
+        <select id="serviceSelect">
+            <option>KRA Nil Returns</option>
+            <option>KRA Income Returns</option>
+            <option>KRA PIN Registration</option>
+            <option>KRA PIN Retrieval</option>
+            <option>eCitizen Account Recovery</option>
+            <option>eCitizen New Account</option>
+            <option>SHA Registration</option>
+            <option>SHA — Add Dependants</option>
+            <option>NTSA — Smart Driving Licence</option>
+            <option>NTSA — Vehicle Transfer</option>
+            <option>NTSA — TIMs Account</option>
+            <option>Business Name Registration</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label><span class="en">Upload ID / Passport Photo (optional)</span><span class="sw">Pakia Picha ya Kitambulisho (hiari)</span></label>
+        <div class="upload-box" onclick="document.getElementById('fileUpload').click()">
+            <div id="uploadPrompt">📷 <span class="en">Tap to upload photo or selfie</span><span class="sw">Bonyeza kupakia picha</span></div>
+            <input type="file" id="fileUpload" accept="image/*" capture="environment" onchange="previewFile(this)">
+            <div class="upload-preview" id="uploadPreview"><img id="uploadImg" src="" alt="Preview"></div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label><span class="en">Additional Notes (optional)</span><span class="sw">Maelezo Zaidi (hiari)</span></label>
+        <textarea id="clientNotes" rows="2" placeholder="Any extra details..."></textarea>
+    </div>
+    <button class="btn btn-dark" onclick="generateOrder()">⚡ <span class="en">Generate Reference & Preview</span><span class="sw">Tengeneza Nambari ya Rejea</span></button>
+    <div class="order-ref" id="orderRef">
+        <div class="order-ref-label en">Your Reference Code</div><div class="order-ref-label sw">Nambari Yako ya Rejea</div>
+        <div class="order-ref-code" id="orderRefCode">---</div>
+        <div class="order-ref-note en">Save this to track your request above.</div><div class="order-ref-note sw">Hifadhi nambari hii kufuatilia ombi lako.</div>
+    </div>
+    <button class="btn btn-wa" id="whatsappBtn" style="margin-top:10px">
+        <svg class="wa-icon" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.742.002-2.602-1.01-5.05-2.85-6.892-1.84-1.842-4.29-2.856-6.896-2.858-5.442 0-9.867 4.372-9.87 9.744a9.664 9.664 0 0 0 1.488 5.008l-.195.713-.671 2.451 2.51-.659.715-.188zm11.332-6.837c-.31-.155-1.837-.905-2.11-.1-.274.1-.473.445-.58.568-.109.123-.217.186-.527.03-.31-.155-1.311-.483-2.498-1.541-.924-.824-1.547-1.842-1.728-2.152-.18-.31-.019-.477.136-.631.14-.139.31-.361.464-.541.155-.18.207-.309.31-.515.103-.206.052-.386-.026-.541-.077-.155-.696-1.677-.954-2.299-.25-.601-.505-.519-.695-.531-.18-.011-.387-.013-.593-.013-.206 0-.541.077-.824.386-.284.309-1.082 1.056-1.082 2.575 0 1.52 1.107 2.99 1.262 3.2 1.55 2.04 2.346 3.22 4.981 4.26 1.83.72 2.62.58 3.56.44.94-.14 2.11-.86 2.4-1.65.29-.79.29-1.47.21-1.61-.08-.14-.29-.22-.6-.375z"/></svg>
+        <span class="en">Send WhatsApp Request</span><span class="sw">Tuma WhatsApp</span>
+    </button>
+    <a class="btn btn-call" href="tel:+254100733790">📞 <span class="en">Call Us Now</span><span class="sw">Piga Simu Sasa</span></a>
+    <button class="btn btn-print" onclick="window.print()">🖨️ <span class="en">Print This Page</span><span class="sw">Chapisha Ukurasa Huu</span></button>
+</div>
+
+<!-- ── WhatsApp Auto-reply Guide ── -->
+<h2 class="section-title"><span class="en">After You Message Us</span><span class="sw">Baada ya Kutuma Ujumbe</span></h2>
+<div class="wa-guide-box">
+    <h3>💬 <span class="en">What to expect on WhatsApp</span><span class="sw">Unachotazamia kwa WhatsApp</span></h3>
+    <div class="wa-step"><div class="wa-step-icon">1️⃣</div><div class="wa-step-text"><strong class="en">Instant acknowledgment</strong><strong class="sw">Uthibitisho wa haraka</strong><span class="en">You'll receive an automated reply confirming your request was received.</span><span class="sw">Utapokea jibu la moja kwa moja kuthibitisha ombi lako.</span></div></div>
+    <div class="wa-step"><div class="wa-step-icon">2️⃣</div><div class="wa-step-text"><strong class="en">Agent picks up (within 5 mins)</strong><strong class="sw">Wakala anajibu (ndani ya dakika 5)</strong><span class="en">A live agent will confirm your details and clarify any missing info.</span><span class="sw">Wakala wa moja kwa moja atathibitisha maelezo yako.</span></div></div>
+    <div class="wa-step"><div class="wa-step-icon">3️⃣</div><div class="wa-step-text"><strong class="en">Processing begins</strong><strong class="sw">Kazi inaanza</strong><span class="en">Your service is processed. You'll get updates along the way.</span><span class="sw">Huduma yako inashughulikiwa. Utapata masasisho.</span></div></div>
+    <div class="wa-step"><div class="wa-step-icon">4️⃣</div><div class="wa-step-text"><strong class="en">Delivery & payment</strong><strong class="sw">Uwasilishaji na malipo</strong><span class="en">Documents are sent to your WhatsApp. Pay via M-Pesa after receiving.</span><span class="sw">Nyaraka zinatumwa. Lipa kwa M-Pesa baada ya kupokea.</span></div></div>
+</div>
+
+<!-- ── Referral ── -->
+<div class="referral-box">
+    <h3>🎁 <span class="en">Refer a Friend</span><span class="sw">Pendekeza Rafiki</span></h3>
+    <p class="en">Know someone who needs KRA, SHA or eCitizen help? Share this page!</p>
+    <p class="sw">Unajua mtu anayehitaji msaada? Mshirikishe ukurasa huu!</p>
+    <div class="share-row">
+        <button class="share-btn" onclick="shareWA()"><svg width="13" height="13" viewBox="0 0 24 24" fill="#25d366"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</button>
+        <button class="share-btn" onclick="copyLink()">🔗 <span class="en">Copy Link</span><span class="sw">Nakili Kiungo</span></button>
+        <button class="share-btn" onclick="nativeShare()">📤 <span class="en">Share</span><span class="sw">Shiriki</span></button>
+    </div>
+</div>
+
+<!-- ── Google Review ── -->
+<a class="google-review-btn" href="https://g.page/r/YOUR_GOOGLE_REVIEW_LINK" target="_blank">
+    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    <span class="en">Leave Us a Google Review ⭐</span><span class="sw">Tuachie Ukaguzi wa Google ⭐</span>
+</a>
+
+<!-- ── Location ── -->
+<h2 class="section-title"><span class="en">Find Us</span><span class="sw">Tupate</span></h2>
+<div class="location-box">
+    <div class="location-map-placeholder" onclick="openMaps()">
+        <div class="map-pin">📍</div>
+        <div style="font-size:13px;font-weight:700"><span class="en">Tap to open in Google Maps</span><span class="sw">Bonyeza kufungua Ramani za Google</span></div>
+    </div>
+    <div class="location-info">
+        <h4>Online Cyber Services Agency</h4>
+        <p class="en">Nairobi, Kenya · Available online & in-person</p>
+        <p class="sw">Nairobi, Kenya · Inapatikana mtandaoni na ana kwa ana</p>
+        <a class="contact-chip chip-wa" href="https://wa.me/254100733790" style="margin:0"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> <span class="en">Get Directions on WhatsApp</span><span class="sw">Pata Mwelekeo kwa WhatsApp</span></a>
+    </div>
+</div>
+
+<!-- ── Hours ── -->
+<div class="hours-box">
+    <div class="hours-header"><span class="en">Operating Schedule</span><span class="sw">Ratiba ya Kazi</span> <span class="en">Hours</span><span class="sw">Masaa</span></div>
+    <div class="hours-row"><span class="hours-label en">Monday – Friday</span><span class="hours-label sw">Jumatatu – Ijumaa</span><span class="hours-value">8:00 AM – 5:00 PM</span></div>
+    <div class="hours-row"><span class="hours-label en">Saturday</span><span class="hours-label sw">Jumamosi</span><span class="hours-value">9:00 AM – 1:00 PM</span></div>
+    <div class="hours-row"><span class="hours-label en">Sunday</span><span class="hours-label sw">Jumapili</span><span class="hours-value en">Closed</span><span class="hours-value sw">Imefungwa</span></div>
+</div>
+
+<!-- ── Checklist ── -->
+<div class="checklist-box">
+    <div class="checklist-summary" onclick="toggleEl('checklistContent','checklistArrow')">
+        <span class="en">Required Documentation</span><span class="sw">Nyaraka Zinazohitajika</span>
+        <span id="checklistArrow" style="font-size:11px;color:var(--text-muted)">▼</span>
+    </div>
+    <div id="checklistContent" class="checklist-content">
+        • <strong>KRA Nil Returns:</strong> National ID & KRA PIN.<br>
+        • <strong>KRA New PIN:</strong> ID Number & Date of Birth.<br>
+        • <strong>KRA PIN Retrieval:</strong> National ID Number.<br>
+        • <strong>eCitizen Recovery:</strong> ID Number & phone access.<br>
+        • <strong>SHA Registration:</strong> ID Number & KRA PIN.<br>
+        • <strong>NTSA Services:</strong> ID, KRA PIN & relevant docs.<br>
+        • <strong>Business Setup:</strong> Three unique proposed names.
+    </div>
+</div>
+
+<!-- ── Payment ── -->
+<div class="mpesa-card">
+    <div class="mpesa-header">💳 <span class="en">Payment via M-Pesa</span><span class="sw">Malipo kwa M-Pesa</span></div>
+    <ol class="mpesa-steps">
+        <li class="en">Submit your request securely over WhatsApp.</li>
+        <li class="en">Agent verifies your details for accuracy.</li>
+        <li class="en">Pay via M-Pesa only after work is confirmed done.</li>
+        <li class="sw">Tuma ombi lako kwa WhatsApp kwa usalama.</li>
+        <li class="sw">Wakala wetu atathibitisha maelezo yako.</li>
+        <li class="sw">Lipa kwa M-Pesa baada ya kazi kukamilika.</li>
+    </ol>
+</div>
+
+<!-- ── How It Works ── -->
+<h2 class="section-title"><span class="en">How It Works</span><span class="sw">Jinsi Inavyofanya Kazi</span></h2>
+<div class="steps-container">
+    <div class="step-item"><div class="step-number">1</div><div class="step-text"><h4><span class="en">Choose Your Service</span><span class="sw">Chagua Huduma</span></h4><p><span class="en">Tap any service card or use the quiz above to find what you need.</span><span class="sw">Bonyeza kadi ya huduma au tumia maswali hapo juu.</span></p></div></div>
+    <div class="step-item"><div class="step-number">2</div><div class="step-text"><h4><span class="en">Send Your Request</span><span class="sw">Tuma Ombi Lako</span></h4><p><span class="en">Fill the form, get a reference code, then contact us via WhatsApp or call.</span><span class="sw">Jaza fomu, pata nambari ya rejea, kisha wasiliana nasi.</span></p></div></div>
+    <div class="step-item"><div class="step-number">3</div><div class="step-text"><h4><span class="en">Receive & Pay</span><span class="sw">Pokea na Lipa</span></h4><p><span class="en">Documents delivered to your WhatsApp or email. Pay via M-Pesa after.</span><span class="sw">Nyaraka zinatumwa. Lipa kwa M-Pesa baada ya kupokea.</span></p></div></div>
+</div>
+
+<!-- ── Reviews ── -->
+<h2 class="section-title"><span class="en">Client Feedback</span><span class="sw">Maoni ya Wateja</span></h2>
+<div class="review-card"><div class="review-stars">⭐⭐⭐⭐⭐</div><div class="review-text">"Sorted my locked eCitizen account within 15 minutes. Very professional."</div><div class="review-user">Kevin O., Nairobi</div></div>
+<div class="review-card"><div class="review-stars">⭐⭐⭐⭐⭐</div><div class="review-text">"Filing my KRA returns has never been this smooth. Highly recommend!"</div><div class="review-user">Mary W., Mombasa</div></div>
+<div class="review-card"><div class="review-stars">⭐⭐⭐⭐⭐</div><div class="review-text">"Niliomba usajili wa SHA na ilikamilika haraka sana. Asante sana!"</div><div class="review-user">Aisha M., Kisumu</div></div>
+
+<!-- ── FAQ ── -->
+<h2 class="section-title"><span class="en">Frequently Asked Questions</span><span class="sw">Maswali Yanayoulizwa Mara kwa Mara</span></h2>
+<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">Is my data secure?</span><span class="sw">Je, data yangu iko salama?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">Yes. All data is handled confidentially and never stored or shared. Cleared immediately after delivery.</div><div class="faq-answer sw">Ndiyo. Data yako inashughulikiwa kwa siri na haishirikishwi na watu wengine.</div></div>
+<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">What if my account is locked?</span><span class="sw">Je, akaunti yangu imefungwa?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">Our agent guides you through manual verification via WhatsApp to restore access.</div><div class="faq-answer sw">Wakala wetu atakusaidia hatua kwa hatua kupitia WhatsApp kufungua akaunti yako.</div></div>
+<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">How do I pay?</span><span class="sw">Ninalipaje?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">Via M-Pesa after your request is processed. You only pay once work is done.</div><div class="faq-answer sw">Kwa M-Pesa baada ya kazi kukamilika. Unalipa tu kazi inapokwisha.</div></div>
+<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">What is the KRA deadline?</span><span class="sw">Tarehe ya mwisho ya KRA ni lini?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">KRA annual returns are due June 30 each year. Late filing attracts a Ksh 2,000 penalty or 5% of tax due.</div><div class="faq-answer sw">Marejesho ya KRA huisha Juni 30 kila mwaka. Kuchelewa huleta faini ya Ksh 2,000.</div></div>
+
+<!-- ── Preview Panel ── -->
+<div class="agent-panel-demo">
+    <span class="demo-badge">LIVE PREVIEW</span>
+    <h3 style="margin:0 0 4px;font-family:'Syne',sans-serif"><span class="en">Request Summary</span><span class="sw">Muhtasari wa Ombi</span></h3>
+    <p style="color:var(--text-muted);font-size:13px;margin:0 0 8px"><span class="en">Updates when you generate a reference above.</span><span class="sw">Inasasishwa unapozalisha nambari ya rejea.</span></p>
+    <div class="request-card">
+        <div><strong id="demoName">Guest Client</strong><br><span style="font-size:12px;color:var(--text-muted)" class="en">Service</span><span style="font-size:12px;color:var(--text-muted)" class="sw">Huduma</span><br><span style="color:#60a5fa;font-size:13px;font-weight:600" id="demoService">KRA Nil Returns</span><br><span style="font-size:11px;color:var(--text-muted)" id="demoRef"></span></div>
+        <span class="status-badge en">Ready</span><span class="status-badge sw">Tayari</span>
+    </div>
+</div>
+
+<!-- ── Admin ── -->
+<div class="admin-trigger"><button onclick="document.getElementById('adminOverlay').classList.add('open')">🔒 <span class="en">Admin Login</span><span class="sw">Ingia kama Msimamizi</span></button></div>
+<div class="admin-overlay" id="adminOverlay">
+    <div class="admin-panel">
+        <button class="admin-close" onclick="document.getElementById('adminOverlay').classList.remove('open')">✕</button>
+        <h3>🔒 <span class="en">Admin Panel</span><span class="sw">Paneli ya Msimamizi</span></h3>
+        <div id="adminLoginSection">
+            <input class="admin-input" type="password" id="adminPass" placeholder="Enter password">
+            <button class="admin-login-btn" onclick="adminLogin()"><span class="en">Login</span><span class="sw">Ingia</span></button>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center" class="en">Default password: admin123</p>
+        </div>
+        <div id="adminContent" style="display:none">
+            <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px" class="en">All submitted orders this session:</p>
+            <div id="adminOrders"></div>
+            <button class="admin-login-btn" style="background:#ef4444;margin-top:10px" onclick="adminLogout()"><span class="en">Logout</span><span class="sw">Toka</span></button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    &copy; 2026 Online Cyber Services Agency. All rights reserved.<br>
+    <span style="font-size:11px;opacity:0.6;display:inline-block;margin-top:5px"><span class="en">Independent digital services platform.</span><span class="sw">Jukwaa huru la huduma za kidijitali.</span></span>
+</footer>
+</div>
+
+<!-- ── Chat Bubble ── -->
+<div class="chat-bubble" id="chatBubble">
+    <button class="chat-bubble-close" onclick="document.getElementById('chatBubble').style.display='none'">✕</button>
+    <p>👋 <span class="en"><strong>Need help?</strong> We're online and ready to assist you right now!</span><span class="sw"><strong>Unahitaji msaada?</strong> Tuko mtandaoni na tayari kukusaidia!</span></p>
+    <a class="chat-bubble-btn" href="https://wa.me/254100733790" target="_blank">💬 <span class="en">Chat with us</span><span class="sw">Zungumza nasi</span></a>
+</div>
+
+<!-- ── Float WA ── -->
+<a class="float-wa" href="https://wa.me/254100733790" target="_blank">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.742.002-2.602-1.01-5.05-2.85-6.892-1.84-1.842-4.29-2.856-6.896-2.858-5.442 0-9.867 4.372-9.87 9.744a9.664 9.664 0 0 0 1.488 5.008l-.195.713-.671 2.451 2.51-.659.715-.188zm11.332-6.837c-.31-.155-1.837-.905-2.11-.1-.274.1-.473.445-.58.568-.109.123-.217.186-.527.03-.31-.155-1.311-.483-2.498-1.541-.924-.824-1.547-1.842-1.728-2.152-.18-.31-.019-.477.136-.631.14-.139.31-.361.464-.541.155-.18.207-.309.31-.515.103-.206.052-.386-.026-.541-.077-.155-.696-1.677-.954-2.299-.25-.601-.505-.519-.695-.531-.18-.011-.387-.013-.593-.013-.206 0-.541.077-.824.386-.284.309-1.082 1.056-1.082 2.575 0 1.52 1.107 2.99 1.262 3.2 1.55 2.04 2.346 3.22 4.981 4.26 1.83.72 2.62.58 3.56.44.94-.14 2.11-.86 2.4-1.65.29-.79.29-1.47.21-1.61-.08-.14-.29-.22-.6-.375z"/></svg>
+</a>
+
+<script>
+// ── Clock ──
+function updateClock(){const e=document.getElementById('liveClock'),n=new Date();let h=n.getHours();const m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0'),a=h>=12?'PM':'AM';h=h%12||12;e.innerText=`${String(h).padStart(2,'0')}:${m}:${s} ${a}`;}
+setInterval(updateClock,1000);updateClock();
+
+// ── Countdown ──
+function updateCountdown(){const d=new Date('2026-06-30T23:59:59')-new Date();if(d<=0){document.getElementById('countdownTimer').innerText='DEADLINE PASSED';return;}const dy=Math.floor(d/86400000),hr=Math.floor((d%86400000)/3600000),mn=Math.floor((d%3600000)/60000);document.getElementById('countdownTimer').innerText=`${String(dy).padStart(2,'0')} : ${String(hr).padStart(2,'0')} : ${String(mn).padStart(2,'0')}`;}
+setInterval(updateCountdown,60000);updateCountdown();
+
+// ── Animated Counters ──
+function animateCounter(id,target,suffix){let v=0;const step=Math.ceil(target/60),t=setInterval(()=>{v=Math.min(v+step,target);document.getElementById(id).innerText=v+(suffix||'');if(v>=target)clearInterval(t);},30);}
+setTimeout(()=>{animateCounter('ctrClients',850,'+');animateCounter('ctrReturns',1247,'+');animateCounter('ctrEcit',320,'+');animateCounter('ctrBiz',180,'+');},500);
+
+// ── Tips ──
+const tipsEn=['KRA late filing penalty is Ksh 2,000 or 5% of tax due — file before June 30!','You must file KRA returns even if you have no income (Nil Returns).','SHA registration is mandatory for all Kenyans — ensure your family is covered.','NTSA Smart DL is required for all drivers. Renew before expiry to avoid fines.','eCitizen is used for passports, good conduct certificates, birth certificates & more.','Business name registration must be renewed every year on eCitizen.'];
+const tipsSw=['Faini ya KRA ya kuchelewa ni Ksh 2,000 — wasilisha kabla ya Juni 30!','Lazima ufanye KRA returns hata kama huna mapato (Nil Returns).','Usajili wa SHA ni lazima kwa Wakenya wote — hakikisha familia yako inalindwa.','Smart DL ya NTSA inahitajika kwa madereva wote. Fanya upya kabla haijisha.','eCitizen hutumiwa kupata pasipoti, cheti cha tabia njema, cheti cha kuzaliwa & zaidi.','Jina la biashara lazima lihuishwe kila mwaka kwenye eCitizen.'];
+let tipIdx=0;function rotateTip(){document.getElementById('tipEn').innerText=tipsEn[tipIdx%tipsEn.length];document.getElementById('tipSw').innerText=tipsSw[tipIdx%tipsSw.length];tipIdx++;}rotateTip();setInterval(rotateTip,8000);
+
+// ── Language ──
+let lang='en';
+document.getElementById('langToggle').addEventListener('click',()=>{lang=lang==='en'?'sw':'en';const other=lang==='en'?'sw':'en';document.querySelectorAll('.'+lang).forEach(e=>e.style.display='');document.querySelectorAll('.'+other).forEach(e=>e.style.display='none');document.getElementById('langToggle').innerText=lang==='en'?'🇰🇪 SW':'🇬🇧 EN';});
+
+// ── Theme ──
+document.getElementById('themeToggle').addEventListener('click',()=>{const d=document.documentElement.getAttribute('data-theme')==='dark';document.documentElement.setAttribute('data-theme',d?'light':'dark');document.getElementById('themeToggle').innerText=d?'🌙':'☀️';});
+
+// ── Font size ──
+let fontSize=15;function changeFontSize(d){fontSize=Math.min(20,Math.max(12,fontSize+d));document.documentElement.style.setProperty('--font-size-base',fontSize+'px');}
+
+// ── Service accordion ──
+function toggleService(c){const a=c.classList.contains('active');document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));if(!a)c.classList.add('active');}
+
+// ── Quiz ──
+let quizPath=[];
+function quizAnswer(step,choice){quizPath.push(choice);if(step===0){if(choice===0){document.getElementById('qStep0').classList.remove('active');document.getElementById('qStep1').classList.add('active');}else if(choice===1){quizResult('eCitizen Services','You need eCitizen help — account recovery, new registration or portal assistance.');}else if(choice===2){quizResult('SHA Services','You need SHA registration or to update your social health coverage.');}else if(choice===3){quizResult('NTSA Services','You need NTSA help — Smart DL, vehicle transfer, TIMs or inspection booking.');}else if(choice===4){quizResult('Business Name Registration','You need business name search and registration. Bring 3 proposed names, your ID and KRA PIN.');}}}
+function quizResult(title,desc){document.querySelectorAll('.quiz-step').forEach(e=>e.classList.remove('active'));const r=document.getElementById('quizResult');r.style.display='block';document.getElementById('quizResultTitle').innerText='✅ '+title;document.getElementById('quizResultDesc').innerText=desc;}
+function quizRestart(){quizPath=[];document.getElementById('quizResult').style.display='none';document.querySelectorAll('.quiz-step').forEach((e,i)=>{e.classList.toggle('active',i===0);});}
+
+// ── Booking slots ──
+const allSlots=['8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'];
+const bookedSlots=['9:00 AM','10:30 AM','2:00 PM'];
+let selectedSlot='';
+function buildSlots(){const g=document.getElementById('slotsGrid');g.innerHTML='';allSlots.forEach(s=>{const b=document.createElement('button');b.className='slot-btn'+(bookedSlots.includes(s)?' booked':'');b.innerText=s;b.disabled=bookedSlots.includes(s);if(!bookedSlots.includes(s))b.onclick=()=>selectSlot(s,b);g.appendChild(b);});}
+function selectSlot(s,btn){selectedSlot=s;document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');document.getElementById('slotConfirmBtn').style.display='block';}
+function confirmSlot(){if(!selectedSlot)return;const name=document.getElementById('clientName').value.trim()||'Client';const service=document.getElementById('serviceSelect').value;const msg=`Hello! I'd like to book a time slot.\nName: *${name}*\nService: *${service}*\nSlot: *${selectedSlot}*\nPlease confirm. Thank you.`;window.open(`https://wa.me/254100733790?text=${encodeURIComponent(msg)}`,'_blank');const c=document.getElementById('slotConfirmed');c.style.display='block';c.innerHTML=`✅ Slot <strong>${selectedSlot}</strong> requested! Check WhatsApp for confirmation.`;document.getElementById('slotConfirmBtn').style.display='none';}
+buildSlots();
+
+// ── Order & WhatsApp ──
+let currentRef='';window._orders={};
+function generateOrder(){const name=document.getElementById('clientName').value.trim();const service=document.getElementById('serviceSelect').value;const ref='CSA-'+Math.floor(1000+Math.random()*9000);currentRef=ref;if(name)document.getElementById('demoName').innerText=name;document.getElementById('demoService').innerText=service;document.getElementById('demoRef').innerText='Ref: '+ref;document.getElementById('orderRefCode').innerText=ref;document.getElementById('orderRef').style.display='block';window._orders[ref]={name:name||'Client',service,status:'In Progress',time:new Date().toLocaleTimeString()};}
+document.getElementById('whatsappBtn').addEventListener('click',()=>{const name=document.getElementById('clientName').value.trim()||'Client';const service=document.getElementById('serviceSelect').value;const ref=currentRef||'(generate ref first)';const notes=document.getElementById('clientNotes').value.trim();const msg=`Hello! My name is *${name}*.\nService: *${service}*\nRef: *${ref}*${notes?'\nNotes: '+notes:''}\nPlease assist. Thank you.`;window.open(`https://wa.me/254100733790?text=${encodeURIComponent(msg)}`,'_blank');});
+
+// ── File upload preview ──
+function previewFile(input){if(!input.files||!input.files[0])return;const r=new FileReader();r.onload=e=>{document.getElementById('uploadImg').src=e.target.result;document.getElementById('uploadPreview').style.display='block';document.getElementById('uploadPrompt').style.display='none';};r.readAsDataURL(input.files[0]);}
+
+// ── Status Tracker ──
+function checkStatus(){const code=document.getElementById('trackerInput').value.trim().toUpperCase();const res=document.getElementById('trackerResult');res.style.display='block';const o=window._orders[code];if(o){res.className='tracker-result found';res.innerHTML=`✅ <strong>${code}</strong> found!<br>Client: ${o.name}<br>Service: ${o.service}<br>Status: <strong>${o.status}</strong><br>Time: ${o.time}`;}else if(/^CSA-\d{4}$/.test(code)){res.className='tracker-result found';res.innerHTML=`✅ <strong>${code}</strong> — Status: <strong>In Progress</strong><br>Agent is handling your request. You'll be notified via WhatsApp.`;}else{res.className='tracker-result not-found';res.innerHTML='❌ Code not found. Please check and try again or contact us on WhatsApp.';}}
+document.getElementById('trackerInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkStatus();});
+
+// ── FAQ ──
+function toggleFaq(el){const answers=el.parentElement.querySelectorAll('.faq-answer');answers.forEach(a=>{a.style.display=a.style.display==='block'?'none':'block';});}
+
+// ── Checklist ──
+function toggleEl(id,arrowId){const c=document.getElementById(id);c.style.display=c.style.display==='none'?'block':'none';}
+
+// ── Notification opt-in ──
+function notifOptIn(){const msg=`Hello! Please add me to the KRA deadline reminder list. I want to be notified before June 30, 2026.`;window.open(`https://wa.me/254100733790?text=${encodeURIComponent(msg)}`,'_blank');}
+
+// ── Share ──
+function shareWA(){window.open('https://wa.me/?text='+encodeURIComponent('Check out this great cyber services agency for KRA, eCitizen, SHA & NTSA help! '+window.location.href),'_blank');}
+function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>alert('Link copied!')).catch(()=>alert('Copy failed.'));}
+function nativeShare(){if(navigator.share){navigator.share({title:'Online Cyber Services Agency',text:'Fast KRA, eCitizen, SHA & NTSA assistance!',url:window.location.href});}else{copyLink();}}
+
+// ── Maps ──
+function openMaps(){window.open('https://maps.google.com/?q=Nairobi+Kenya','_blank');}
+
+// ── Admin ──
+const ADMIN_PASS='admin123';let adminLoggedIn=false;
+function adminLogin(){if(document.getElementById('adminPass').value===ADMIN_PASS){adminLoggedIn=true;document.getElementById('adminLoginSection').style.display='none';document.getElementById('adminContent').style.display='block';renderAdminOrders();}else{alert('Incorrect password.');}}
+function adminLogout(){adminLoggedIn=false;document.getElementById('adminLoginSection').style.display='block';document.getElementById('adminContent').style.display='none';document.getElementById('adminOverlay').classList.remove('open');}
+function renderAdminOrders(){const c=document.getElementById('adminOrders');const keys=Object.keys(window._orders);if(!keys.length){c.innerHTML='<div class="admin-empty">No orders this session yet.</div>';return;}c.innerHTML=keys.map(k=>{const o=window._orders[k];return`<div class="admin-order-row"><strong>${k}</strong> — ${o.name}<br>${o.service}<br><small>${o.time}</small><br><select class="admin-status-select" onchange="updateStatus('${k}',this.value)"><option ${o.status==='In Progress'?'selected':''}>In Progress</option><option ${o.status==='Done'?'selected':''}>Done</option><option ${o.status==='Pending Payment'?'selected':''}>Pending Payment</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></div>`;}).join('');}
+function updateStatus(ref,status){if(window._orders[ref])window._orders[ref].status=status;}
+
+// ── Chat bubble (10s delay) ──
+setTimeout(()=>{const b=document.getElementById('chatBubble');b.style.display='block';},10000);
+
+// ── Offline detection ──
+function checkOnline(){document.getElementById('offlineBanner').style.display=navigator.onLine?'none':'block';}
+window.addEventListener('online',checkOnline);window.addEventListener('offline',checkOnline);checkOnline();
+
+// ── Service Worker for offline ──
+if('serviceWorker' in navigator){const swCode=`self.addEventListener('install',e=>{e.waitUntil(caches.open('csa-v1').then(c=>c.addAll(['/'])));});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;const blob=new Blob([swCode],{type:'application/javascript'});const url=URL.createObjectURL(blob);navigator.serviceWorker.register(url).catch(()=>{});}
+</script>
+</body>
+</html>
