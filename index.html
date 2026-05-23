@@ -1,785 +1,1023 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Cyber Services Agency - KRA, eCitizen, SHA & NTSA Assistance</title>
-    <meta name="description" content="Professional KRA, eCitizen, SHA, NTSA and business registration services. Fast, secure and affordable.">
-    <link rel="manifest" href="#" id="manifestLink">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #f8fafc; --card-bg: #ffffff; --text-main: #0f172a;
-            --text-muted: #64748b; --primary-btn: #0f172a; --primary-btn-text: #ffffff;
-            --border-color: #e2e8f0; --font-size-base: 15px;
-        }
-        [data-theme="dark"] {
-            --bg-color: #080e1f; --card-bg: #0f1b33; --text-main: #e8f0fe;
-            --text-muted: #7a90b8; --primary-btn: #3b82f6; --primary-btn-text: #ffffff;
-            --border-color: #1a2a4a;
-        }
-        * { box-sizing: border-box; }
-        body { font-family: 'Space Grotesk', sans-serif; font-size: var(--font-size-base); background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s, font-size 0.2s; }
-        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
+import { useState, useEffect, useRef, useCallback } from "react";
 
-        /* ── Header ── */
-        .header-status-bar { display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 30px; margin-bottom: 16px; gap: 8px; flex-wrap: wrap; }
-        .status-info { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; }
-        .pulse-dot { width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; position: relative; flex-shrink: 0; }
-        .pulse-dot::after { content: ''; position: absolute; inset: 0; background-color: #10b981; border-radius: 50%; animation: pulse 1.5s infinite ease-in-out; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
-        .live-clock { color: #60a5fa; background-color: rgba(96,165,250,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 11px; }
-        .header-controls { display: flex; gap: 5px; flex-wrap: wrap; }
-        .ctrl-btn { font-family: 'Space Grotesk', sans-serif; background-color: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 9px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: 700; transition: all 0.2s; white-space: nowrap; }
-        .ctrl-btn:hover { border-color: #3b82f6; }
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const WHATSAPP_NUMBER = "254100733790";
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
+const BUSINESS_EMAIL = "onlineagency@gmail.com";
+const SUPER_ADMIN_PASSWORD = "SUPERADMIN2024";
 
-        /* ── Offline banner ── */
-        .offline-banner { display: none; background: #ef4444; color: white; text-align: center; padding: 8px; font-size: 12px; font-weight: 700; border-radius: 10px; margin-bottom: 12px; }
+const BUSINESS_HOURS = {
+  1: { open: 8, close: 20 }, 2: { open: 8, close: 20 }, 3: { open: 8, close: 20 },
+  4: { open: 8, close: 20 }, 5: { open: 8, close: 20 }, 6: { open: 9, close: 17 }, 0: null,
+};
 
-        /* ── Chat bubble ── */
-        .chat-bubble { position: fixed; bottom: 90px; right: 20px; z-index: 1000; max-width: 230px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px 16px 4px 16px; padding: 12px 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); display: none; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .chat-bubble p { margin: 0 0 10px; font-size: 13px; line-height: 1.4; }
-        .chat-bubble-close { position: absolute; top: 6px; right: 10px; cursor: pointer; font-size: 14px; color: var(--text-muted); background: none; border: none; font-family: inherit; }
-        .chat-bubble-btn { display: block; background-color: #25d366; color: white; text-decoration: none; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; text-align: center; }
+const SERVICES = [
+  { id: "ecitizen-phone", name: "eCitizen Phone Number Change", icon: "📱", price: "Ksh 500", time: "24hrs", popular: true, category: "eCitizen" },
+  { id: "sha-services", name: "SHA Services", icon: "🏥", price: "Ksh 300", time: "48hrs", popular: true, category: "Health" },
+  { id: "kra-pin", name: "KRA PIN Retrieval", icon: "🔑", price: "Ksh 200", time: "12hrs", popular: true, category: "KRA" },
+  { id: "kra-email", name: "KRA Email Change", icon: "📧", price: "Ksh 350", time: "24hrs", popular: false, category: "KRA" },
+  { id: "ntsa-services", name: "NTSA Services", icon: "🚗", price: "Ksh 400", time: "48hrs", popular: false, category: "NTSA" },
+  { id: "helb-services", name: "HELB Services", icon: "🎓", price: "Ksh 300", time: "48hrs", popular: true, category: "Education" },
+  { id: "good-conduct", name: "Good Conduct Application", icon: "📋", price: "Ksh 600", time: "72hrs", popular: false, category: "Police" },
+  { id: "passport", name: "Passport Application Assistance", icon: "✈️", price: "Ksh 800", time: "5 days", popular: false, category: "Immigration" },
+];
 
-        /* ── Float WhatsApp ── */
-        .float-wa { position: fixed; bottom: 24px; right: 20px; z-index: 999; background-color: #25d366; color: white; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.4); cursor: pointer; text-decoration: none; animation: floatPulse 3s infinite ease-in-out; }
-        @keyframes floatPulse { 0%,100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4); } 50% { box-shadow: 0 6px 28px rgba(37,211,102,0.65); } }
+const STATUS_COLORS = { Pending: "#f59e0b", "In Progress": "#3b82f6", Completed: "#10b981" };
+const STATUS_BG = { Pending: "#451a03", "In Progress": "#1e3a5f", Completed: "#052e16" };
 
-        /* ── Trust bar ── */
-        .trust-bar { display: flex; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.08)); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; flex-wrap: wrap; }
-        .trust-stat { text-align: center; }
-        .trust-stat-num { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #60a5fa; display: block; }
-        .trust-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .trust-divider { width: 1px; height: 36px; background-color: var(--border-color); }
-        .star-row { font-size: 13px; }
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+const genRequestId = () => `OA-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+const ls = { get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set: (k, v) => localStorage.setItem(k, JSON.stringify(v)) };
+const waLink = (msg) => `${WHATSAPP_LINK}?text=${encodeURIComponent(msg)}`;
 
-        /* ── Verified badges ── */
-        .verified-bar { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-        .verified-badge { display: flex; align-items: center; gap: 6px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: 700; color: var(--text-muted); }
-        .verified-badge span.check { color: #10b981; font-size: 13px; }
+function getBusinessStatus() {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const hours = BUSINESS_HOURS[day];
+  if (!hours) return { open: false, next: "Monday 8:00 AM", label: "Closed Today" };
+  if (hour >= hours.open && hour < hours.close) return { open: true, closes: `${hours.close}:00`, label: "Open" };
+  if (hour < hours.open) return { open: false, next: `Today ${hours.open}:00 AM`, label: "Opens Later" };
+  const nextDay = day === 6 ? 1 : day + 1;
+  const nextHours = BUSINESS_HOURS[nextDay];
+  if (!nextHours) return { open: false, next: "Monday 8:00 AM", label: "Closed" };
+  return { open: false, next: `${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][nextDay]} ${nextHours.open}:00 AM`, label: "Closed" };
+}
 
-        /* ── Animated counter ── */
-        .counter-bar { display: flex; justify-content: center; gap: 20px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px; margin-bottom: 16px; flex-wrap: wrap; }
-        .counter-item { text-align: center; }
-        .counter-num { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #f59e0b; display: block; }
-        .counter-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+function getNightMode() { const h = new Date().getHours(); return h >= 18 || h < 6; }
+function getGreeting() { const h = new Date().getHours(); if (h < 12) return "Good Morning"; if (h < 17) return "Good Afternoon"; return "Good Evening"; }
+function getSeason() { const m = new Date().getMonth(); if ([5,6,7].includes(m)) return "sunny"; if ([3,4,10,11].includes(m)) return "rainy"; return "normal"; }
 
-        /* ── Deadline ── */
-        .deadline-card { background: linear-gradient(135deg, #1e1040, #0f1b33); border: 1px solid #7c3aed44; border-radius: 16px; padding: 16px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
-        [data-theme="light"] .deadline-card { background: linear-gradient(135deg, #f5f3ff, #ede9fe); }
-        .deadline-icon { font-size: 28px; flex-shrink: 0; }
-        .deadline-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #a78bfa; font-weight: 700; margin-bottom: 3px; }
-        .deadline-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-        .deadline-timer { font-family: monospace; font-size: 18px; font-weight: 800; color: #f59e0b; letter-spacing: 2px; }
-        .deadline-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+// ─── STYLES ───────────────────────────────────────────────────────────────────
+const injectStyles = () => {
+  if (document.getElementById("oa-styles")) return;
+  const s = document.createElement("style");
+  s.id = "oa-styles";
+  s.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--em:#10b981;--em2:#059669;--neon:0 0 20px #10b98155;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);--bg:#080808;--bg2:#0d0d0d;--bg3:#111;--text:#f1f5f9;--text2:#94a3b8;--text3:#475569}
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+    .night{--bg:#030303;--em:#34d399}
+    .sunny{--em:#f59e0b}
+    .rainy{--em:#60a5fa}
+    ::-webkit-scrollbar{width:4px;background:var(--bg2)}
+    ::-webkit-scrollbar-thumb{background:var(--em);border-radius:4px}
+    .glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border)}
+    .glass-strong{background:rgba(255,255,255,0.07);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.12)}
+    .glow{box-shadow:var(--neon)}
+    .neon-text{color:var(--em);text-shadow:0 0 20px currentColor}
+    .btn-primary{background:linear-gradient(135deg,var(--em),var(--em2));color:#fff;border:none;padding:12px 28px;border-radius:12px;font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:all .3s;box-shadow:var(--neon)}
+    .btn-primary:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 35px var(--em)}
+    .btn-ghost{background:transparent;color:var(--em);border:1px solid var(--em);padding:11px 24px;border-radius:12px;font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:all .3s}
+    .btn-ghost:hover{background:var(--em);color:#000;box-shadow:var(--neon)}
+    .card{border-radius:20px;padding:24px;transition:all .3s}
+    .card:hover{border-color:var(--em)!important;box-shadow:0 0 30px rgba(16,185,129,.15)!important}
+    .input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 18px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;width:100%;outline:none;transition:all .3s}
+    .input:focus{border-color:var(--em);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+    .input::placeholder{color:var(--text3)}
+    .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px}
+    .toast{position:fixed;bottom:80px;right:20px;z-index:9999;padding:14px 20px;border-radius:14px;font-size:14px;font-weight:600;animation:slideUp .3s ease;max-width:280px}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.95)}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes glow-pulse{0%,100%{box-shadow:0 0 15px var(--em)}50%{box-shadow:0 0 40px var(--em)}}
+    @keyframes aurora{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes typing{from{width:0}to{width:100%}}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes ripple{0%{transform:scale(0);opacity:1}100%{transform:scale(4);opacity:0}}
+    .animate-float{animation:float 4s ease-in-out infinite}
+    .animate-pulse-glow{animation:glow-pulse 2s ease-in-out infinite}
+    .animate-fade-in{animation:fadeIn .6s ease forwards}
+    .page-section{animation:fadeIn .5s ease both}
+    .progress-bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden}
+    .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--em),#34d399);transition:width 1s ease}
+    .skeleton{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:skeleton 1.5s infinite;border-radius:8px}
+    @keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .wa-float{position:fixed;bottom:24px;right:24px;z-index:999;animation:float 3s ease-in-out infinite}
+    .wa-btn{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;box-shadow:0 0 30px rgba(37,211,102,.4);border:none;transition:transform .3s}
+    .wa-btn:hover{transform:scale(1.15)}
+    .nav-glass{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;transition:all .4s}
+    .tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+    .stepper{display:flex;align-items:center;gap:0;margin:24px 0}
+    .step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+    .step-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;z-index:1}
+    .step-line{height:2px;flex:1;margin-top:-18px;z-index:0}
+    .chatbot{position:fixed;bottom:100px;right:24px;z-index:998;width:300px}
+    @media(max-width:768px){.nav-glass{padding:0 16px}.chatbot{width:260px;right:16px}}
+  `;
+  document.head.appendChild(s);
+};
 
-        /* ── Tip ── */
-        .tip-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-left: 3px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; }
-        .tip-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #f59e0b; margin-bottom: 5px; }
-        .tip-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+// ─── HOOKS ────────────────────────────────────────────────────────────────────
+function useClock() {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
+  return time;
+}
 
-        /* ── Section title ── */
-        .section-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin: 28px 0 12px; letter-spacing: -0.3px; }
+function useToast() {
+  const [toasts, setToasts] = useState([]);
+  const show = useCallback((msg, type = "success") => {
+    const id = Date.now();
+    setToasts(p => [...p, { id, msg, type }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
+  }, []);
+  return { toasts, show };
+}
 
-        /* ── Quiz ── */
-        .quiz-box { background-color: var(--card-bg); border: 1px solid #3b82f6; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
-        .quiz-box h3 { font-family: 'Syne', sans-serif; margin: 0 0 14px; font-size: 15px; }
-        .quiz-step { display: none; }
-        .quiz-step.active { display: block; }
-        .quiz-q { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-        .quiz-options { display: flex; flex-direction: column; gap: 8px; }
-        .quiz-opt { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 11px 14px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; font-family: 'Space Grotesk', sans-serif; color: var(--text-main); transition: all 0.18s; }
-        .quiz-opt:hover { border-color: #3b82f6; color: #60a5fa; }
-        .quiz-result { background-color: rgba(59,130,246,0.08); border: 1px solid #3b82f644; border-radius: 12px; padding: 14px; margin-top: 12px; display: none; }
-        .quiz-result-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; color: #60a5fa; }
-        .quiz-result-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-        .quiz-restart { margin-top: 12px; font-family: 'Space Grotesk', sans-serif; background: none; border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 700; }
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
 
-        /* ── Services ── */
-        .services-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .service-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 18px; cursor: pointer; transition: border-color 0.2s, transform 0.1s; }
-        .service-card:hover { border-color: #3b82f6; transform: translateY(-1px); }
-        .service-card.active { border-color: #3b82f6; background-color: rgba(59,130,246,0.05); }
-        .service-card-header { display: flex; align-items: center; }
-        .service-icon { font-size: 20px; margin-right: 10px; }
-        .service-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; flex: 1; }
-        .service-toggle { font-size: 11px; color: var(--text-muted); transition: transform 0.2s; }
-        .service-card.active .service-toggle { transform: rotate(180deg); }
-        .service-desc { font-size: 12px; color: var(--text-muted); margin: 4px 0 0 30px; line-height: 1.5; }
-        .service-detail { display: none; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; }
-        .service-card.active .service-detail { display: block; }
-        .service-detail-row { font-size: 13px; margin-bottom: 7px; color: var(--text-muted); display: flex; gap: 6px; }
-        .service-detail-row strong { color: var(--text-main); min-width: 110px; flex-shrink: 0; }
-        .chips-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); }
-        .contact-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 20px; cursor: pointer; text-decoration: none; border: none; font-family: 'Space Grotesk', sans-serif; transition: opacity 0.2s; }
-        .contact-chip:hover { opacity: 0.8; }
-        .chip-wa { background-color: rgba(37,211,102,0.12); color: #25d366; }
-        .chip-email { background-color: rgba(251,146,60,0.12); color: #fb923c; }
-        .chip-call { background-color: rgba(168,85,247,0.12); color: #a855f7; }
-
-        /* ── Status Tracker ── */
-        .tracker-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
-        .tracker-box h3 { font-family: 'Syne', sans-serif; margin: 0 0 12px; font-size: 15px; }
-        .tracker-input-row { display: flex; gap: 8px; }
-        .tracker-input { font-family: 'Space Grotesk', sans-serif; flex: 1; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); }
-        .tracker-input:focus { outline: none; border-color: #3b82f6; }
-        .tracker-btn { font-family: 'Space Grotesk', sans-serif; padding: 11px 16px; background-color: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
-        .tracker-result { margin-top: 12px; font-size: 13px; padding: 12px; border-radius: 10px; display: none; line-height: 1.6; }
-        .tracker-result.found { background-color: rgba(16,185,129,0.1); border: 1px solid #10b98144; color: #10b981; }
-        .tracker-result.not-found { background-color: rgba(239,68,68,0.1); border: 1px solid #ef444444; color: #ef4444; }
-
-        /* ── Order Form ── */
-        .hero-card { background-color: var(--card-bg); border-radius: 24px; padding: 26px 20px; text-align: center; margin-bottom: 20px; border: 1px solid var(--border-color); }
-        h1 { font-family: 'Syne', sans-serif; font-size: 23px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.5px; line-height: 1.2; }
-        .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; line-height: 1.4; }
-        .form-group { text-align: left; margin-bottom: 14px; }
-        label { display: block; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; margin-bottom: 5px; color: var(--text-muted); }
-        input, select, textarea { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); transition: border-color 0.2s; resize: none; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; }
-        .upload-box { border: 2px dashed var(--border-color); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; background-color: var(--bg-color); }
-        .upload-box:hover { border-color: #3b82f6; }
-        .upload-box input[type="file"] { display: none; }
-        .upload-preview { margin-top: 10px; display: none; }
-        .upload-preview img { max-width: 100%; border-radius: 8px; max-height: 160px; object-fit: cover; }
-        .btn { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 13px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 9px; display: flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none; transition: transform 0.1s, opacity 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-dark { background-color: var(--primary-btn); color: var(--primary-btn-text); }
-        .btn-wa { background-color: #25d366; color: white; box-shadow: 0 4px 12px rgba(37,211,102,0.2); }
-        .btn-call { background-color: #7c3aed; color: white; }
-        .btn-print { background-color: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
-        .wa-icon { width: 18px; height: 18px; fill: white; }
-        .order-ref { display: none; margin-top: 12px; background-color: rgba(59,130,246,0.08); border: 1px dashed #3b82f644; border-radius: 10px; padding: 12px; text-align: center; }
-        .order-ref-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
-        .order-ref-code { font-family: monospace; font-size: 22px; font-weight: 800; color: #60a5fa; letter-spacing: 3px; }
-        .order-ref-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-
-        /* ── Booking ── */
-        .booking-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
-        .booking-box h3 { font-family: 'Syne', sans-serif; margin: 0 0 14px; font-size: 15px; }
-        .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
-        .slot-btn { font-family: 'Space Grotesk', sans-serif; padding: 9px 6px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; background-color: var(--bg-color); color: var(--text-main); transition: all 0.18s; text-align: center; }
-        .slot-btn:hover:not(.booked) { border-color: #3b82f6; color: #60a5fa; }
-        .slot-btn.selected { background-color: #3b82f6; color: white; border-color: #3b82f6; }
-        .slot-btn.booked { background-color: rgba(239,68,68,0.1); color: #ef4444; border-color: #ef444433; cursor: not-allowed; font-style: italic; }
-        .slot-confirm-btn { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 11px; background-color: #10b981; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; display: none; }
-        .slot-confirmed { display: none; background-color: rgba(16,185,129,0.1); border: 1px solid #10b98144; border-radius: 10px; padding: 12px; font-size: 13px; color: #10b981; text-align: center; margin-top: 10px; }
-
-        /* ── Notification opt-in ── */
-        .notif-box { background-color: var(--card-bg); border: 1px solid #f59e0b44; border-radius: 14px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; }
-        .notif-icon { font-size: 26px; flex-shrink: 0; }
-        .notif-text { flex: 1; }
-        .notif-text h4 { margin: 0 0 3px; font-size: 14px; font-weight: 700; }
-        .notif-text p { margin: 0; font-size: 12px; color: var(--text-muted); }
-        .notif-btn { font-family: 'Space Grotesk', sans-serif; padding: 8px 14px; background-color: #f59e0b; color: #0f172a; border: none; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap; }
-
-        /* ── Referral ── */
-        .referral-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; text-align: center; }
-        .referral-box h3 { font-family: 'Syne', sans-serif; font-size: 15px; margin: 0 0 6px; }
-        .referral-box p { font-size: 12px; color: var(--text-muted); margin: 0 0 14px; line-height: 1.5; }
-        .share-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        .share-btn { font-family: 'Space Grotesk', sans-serif; padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; background-color: var(--bg-color); color: var(--text-main); transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
-        .share-btn:hover { border-color: #3b82f6; color: #60a5fa; }
-
-        /* ── Google Review ── */
-        .google-review-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background-color: #fff; color: #1a1a1a; border: 1px solid #dadce0; border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; margin-bottom: 20px; transition: box-shadow 0.2s; }
-        .google-review-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-        [data-theme="dark"] .google-review-btn { background-color: var(--card-bg); color: var(--text-main); border-color: var(--border-color); }
-
-        /* ── WhatsApp guide ── */
-        .wa-guide-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
-        .wa-guide-box h3 { font-family: 'Syne', sans-serif; font-size: 15px; margin: 0 0 12px; }
-        .wa-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
-        .wa-step-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
-        .wa-step-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-        .wa-step-text strong { color: var(--text-main); display: block; margin-bottom: 2px; }
-
-        /* ── Location map ── */
-        .location-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
-        .location-map-placeholder { background: linear-gradient(135deg, #0f1b33, #1a2a4a); height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; position: relative; }
-        [data-theme="light"] .location-map-placeholder { background: linear-gradient(135deg, #dbeafe, #ede9fe); }
-        .map-pin { font-size: 36px; animation: mapBounce 2s infinite ease-in-out; }
-        @keyframes mapBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        .location-info { padding: 14px 18px; }
-        .location-info h4 { font-family: 'Syne', sans-serif; margin: 0 0 4px; font-size: 14px; }
-        .location-info p { margin: 0 0 10px; font-size: 12px; color: var(--text-muted); }
-
-        /* ── Hours ── */
-        .hours-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
-        .hours-header { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 4px; display: flex; justify-content: space-between; }
-        .hours-row { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
-        .hours-row:last-child { border-bottom: none; color: #ef4444; }
-        .hours-label { font-weight: 600; }
-        .hours-value { color: var(--text-muted); font-weight: 500; }
-
-        /* ── Checklist ── */
-        .checklist-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
-        .checklist-summary { font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .checklist-content { margin-top: 12px; font-size: 13px; line-height: 1.8; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 10px; display: none; }
-
-        /* ── Payment ── */
-        .mpesa-card { background-color: var(--card-bg); border: 1px solid #10b981; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
-        .mpesa-header { font-weight: 700; color: #10b981; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .mpesa-steps { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; padding-left: 18px; }
-
-        /* ── Steps ── */
-        .steps-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .step-item { display: flex; gap: 14px; background-color: var(--card-bg); padding: 16px; border-radius: 16px; border: 1px solid var(--border-color); }
-        .step-number { background-color: #3b82f6; color: white; font-weight: 700; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
-        .step-text h4 { margin: 0 0 3px; font-size: 14px; font-weight: 700; }
-        .step-text p { margin: 0; font-size: 13px; color: var(--text-muted); }
-
-        /* ── Reviews ── */
-        .review-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
-        .review-stars { color: #f59e0b; font-size: 13px; margin-bottom: 5px; }
-        .review-text { font-size: 13px; line-height: 1.5; margin-bottom: 7px; }
-        .review-user { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
-
-        /* ── FAQ ── */
-        .faq-item { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
-        .faq-question { padding: 14px 16px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .faq-answer { padding: 0 16px 14px; font-size: 13px; color: var(--text-muted); display: none; line-height: 1.5; border-top: 1px solid var(--border-color); padding-top: 10px; }
-
-        /* ── Admin panel ── */
-        .admin-trigger { text-align: center; margin-bottom: 20px; }
-        .admin-trigger button { font-family: 'Space Grotesk', sans-serif; background: none; border: 1px dashed var(--border-color); color: var(--text-muted); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: 700; }
-        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
-        .admin-overlay.open { display: flex; }
-        .admin-panel { background-color: var(--card-bg); border-radius: 20px; padding: 24px; width: 90%; max-width: 420px; border: 1px solid var(--border-color); max-height: 85vh; overflow-y: auto; }
-        .admin-panel h3 { font-family: 'Syne', sans-serif; margin: 0 0 16px; }
-        .admin-input { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background-color: var(--bg-color); color: var(--text-main); margin-bottom: 10px; }
-        .admin-input:focus { outline: none; border-color: #3b82f6; }
-        .admin-login-btn { font-family: 'Space Grotesk', sans-serif; width: 100%; padding: 11px; background-color: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; }
-        .admin-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); font-family: inherit; }
-        .admin-order-row { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 8px; font-size: 13px; }
-        .admin-order-row strong { color: #60a5fa; }
-        .admin-status-select { font-family: 'Space Grotesk', sans-serif; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-color); color: var(--text-main); font-size: 12px; cursor: pointer; margin-top: 6px; }
-        .admin-empty { text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px; }
-
-        /* ── Agent preview ── */
-        .agent-panel-demo { background-color: var(--card-bg); border-radius: 20px; padding: 18px; border: 1px solid var(--border-color); margin-bottom: 20px; }
-        .demo-badge { background-color: rgba(59,130,246,0.1); color: #60a5fa; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 10px; letter-spacing: 0.5px; }
-        .request-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .status-badge { background-color: rgba(16,185,129,0.15); color: #10b981; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
-
-        /* ── Font size controls ── */
-        .font-controls { display: flex; gap: 5px; align-items: center; }
-        .font-btn { font-family: 'Space Grotesk', sans-serif; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main); width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
-
-        footer { text-align: center; padding: 20px 0 80px; font-size: 11px; color: var(--text-muted); line-height: 1.5; }
-        .sw { display: none; }
-        @media print { .float-wa, .chat-bubble, .header-controls, .admin-trigger, .btn-print { display: none !important; } body { background: white !important; color: black !important; } }
-    </style>
-</head>
-<body>
-<div class="offline-banner" id="offlineBanner">⚠️ You are offline. Some features may not work.</div>
-<div class="container">
-
-<!-- ── Header ── -->
-<div class="header-status-bar">
-    <div class="status-info">
-        <div class="pulse-dot"></div>
-        <span style="color:#10b981" class="en">ONLINE</span><span style="color:#10b981" class="sw">MTANDAONI</span>
-        <span style="color:var(--text-muted); font-weight:normal">|</span>
-        <span id="liveClock" class="live-clock">00:00:00</span>
+function ToastContainer({ toasts }) {
+  const colors = { success: { bg: "#052e16", border: "#10b981", text: "#34d399" }, error: { bg: "#450a0a", border: "#ef4444", text: "#fca5a5" }, info: { bg: "#0c1445", border: "#3b82f6", text: "#93c5fd" } };
+  return (
+    <div style={{ position: "fixed", bottom: 90, right: 20, zIndex: 9999, display: "flex", flexDirection: "column", gap: 8 }}>
+      {toasts.map(t => {
+        const c = colors[t.type] || colors.success;
+        return (
+          <div key={t.id} className="toast glass" style={{ background: c.bg, borderColor: c.border, color: c.text, border: `1px solid ${c.border}` }}>
+            {t.type === "success" ? "✅" : t.type === "error" ? "❌" : "ℹ️"} {t.msg}
+          </div>
+        );
+      })}
     </div>
-    <div class="header-controls">
-        <div class="font-controls">
-            <button class="font-btn" onclick="changeFontSize(-1)" title="Smaller">A-</button>
-            <button class="font-btn" onclick="changeFontSize(1)" title="Larger">A+</button>
+  );
+}
+
+function WaFloat({ tooltip }) {
+  const [showTip, setShowTip] = useState(false);
+  return (
+    <div className="wa-float">
+      {showTip && (
+        <div className="glass" style={{ position: "absolute", right: 70, bottom: 10, padding: "8px 14px", borderRadius: 10, whiteSpace: "nowrap", fontSize: 13, color: "#fff" }}>
+          Chat with us!
         </div>
-        <button class="ctrl-btn" id="langToggle">🇰🇪 SW</button>
-        <button class="ctrl-btn" id="themeToggle">☀️</button>
-        <button class="ctrl-btn" onclick="window.print()">🖨️</button>
+      )}
+      <button className="wa-btn" onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}
+        onClick={() => window.open(`${WHATSAPP_LINK}?text=Hello Online Agency, I need help with your services.`, "_blank")}>
+        <span style={{ fontSize: 28 }}>💬</span>
+      </button>
+      <div style={{ position: "absolute", top: -4, right: -4, width: 14, height: 14, background: "#10b981", borderRadius: "50%", border: "2px solid #000", animation: "glow-pulse 2s infinite" }} />
     </div>
-</div>
+  );
+}
 
-<!-- ── Offline Banner handled by JS ── -->
-
-<!-- ── Trust Bar ── -->
-<div class="trust-bar">
-    <div class="trust-stat"><span class="trust-stat-num">4.9</span><div class="star-row">⭐⭐⭐⭐⭐</div><span class="trust-stat-label en">Rating</span><span class="trust-stat-label sw">Tathmini</span></div>
-    <div class="trust-divider"></div>
-    <div class="trust-stat"><span class="trust-stat-num" id="ctrClients">0</span><span class="trust-stat-label en">Clients Served</span><span class="trust-stat-label sw">Wateja</span></div>
-    <div class="trust-divider"></div>
-    <div class="trust-stat"><span class="trust-stat-num">98%</span><span class="trust-stat-label en">Success Rate</span><span class="trust-stat-label sw">Mafanikio</span></div>
-</div>
-
-<!-- ── Verified Badges ── -->
-<div class="verified-bar">
-    <div class="verified-badge"><span class="check">✓</span> KRA Certified</div>
-    <div class="verified-badge"><span class="check">✓</span> eCitizen Partner</div>
-    <div class="verified-badge"><span class="check">✓</span> SHA Registered</div>
-    <div class="verified-badge"><span class="check">✓</span> NTSA Authorised</div>
-</div>
-
-<!-- ── Animated Counters ── -->
-<div class="counter-bar">
-    <div class="counter-item"><span class="counter-num" id="ctrReturns">0</span><span class="counter-label en">Returns Filed</span><span class="counter-label sw">Marejesho</span></div>
-    <div class="counter-item"><span class="counter-num" id="ctrEcit">0</span><span class="counter-label en">eCitizen Cases</span><span class="counter-label sw">Kesi za eCitizen</span></div>
-    <div class="counter-item"><span class="counter-num" id="ctrBiz">0</span><span class="counter-label en">Businesses Reg.</span><span class="counter-label sw">Biashara</span></div>
-</div>
-
-<!-- ── Deadline Countdown ── -->
-<div class="deadline-card">
-    <div class="deadline-icon">⏳</div>
-    <div>
-        <div class="deadline-label en">KRA Deadline Alert</div><div class="deadline-label sw">Onyo la Muda wa KRA</div>
-        <div class="deadline-title en">Annual Returns Due: June 30, 2026</div><div class="deadline-title sw">Marejesho ya Mwaka: Juni 30, 2026</div>
-        <div class="deadline-timer" id="countdownTimer">-- : -- : --</div>
-        <div class="deadline-sub en">Days : Hours : Minutes — avoid penalties!</div><div class="deadline-sub sw">Siku : Masaa : Dakika — epuka faini!</div>
+function StatusBadge({ status }) {
+  const s = getBusinessStatus();
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: s.open ? "rgba(16,185,129,.15)" : "rgba(239,68,68,.15)", border: `1px solid ${s.open ? "#10b981" : "#ef4444"}`, fontSize: 12, fontWeight: 700 }}>
+      <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.open ? "#10b981" : "#ef4444", animation: s.open ? "glow-pulse 1.5s infinite" : "pulse 2s infinite" }} />
+      <span style={{ color: s.open ? "#34d399" : "#fca5a5" }}>{s.open ? "Open" : s.label}</span>
     </div>
-</div>
+  );
+}
 
-<!-- ── Tip ── -->
-<div class="tip-box">
-    <div class="tip-label en">💡 Did You Know?</div><div class="tip-label sw">💡 Je, Unajua?</div>
-    <div class="tip-text en" id="tipEn"></div><div class="tip-text sw" id="tipSw"></div>
-</div>
+function Navbar({ page, setPage, role, nightMode }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [logoPressed, setLogoPressed] = useState(false);
+  const pressTimer = useRef(null);
 
-<!-- ── Notification Opt-in ── -->
-<div class="notif-box">
-    <div class="notif-icon">🔔</div>
-    <div class="notif-text">
-        <h4><span class="en">Get KRA Deadline Reminders</span><span class="sw">Pokea Vikumbusho vya KRA</span></h4>
-        <p class="en">We'll notify you before the June 30 deadline via WhatsApp.</p>
-        <p class="sw">Tutakutumia ukumbusho kabla ya Juni 30 kwa WhatsApp.</p>
-    </div>
-    <button class="notif-btn" onclick="notifOptIn()"><span class="en">Notify Me</span><span class="sw">Niarifu</span></button>
-</div>
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-<!-- ── What Service Do I Need? Quiz ── -->
-<div class="quiz-box">
-    <h3>🤔 <span class="en">What service do I need?</span><span class="sw">Ninahitaji huduma gani?</span></h3>
-    <div class="quiz-step active" id="qStep0">
-        <div class="quiz-q en">What do you need help with?</div><div class="quiz-q sw">Unahitaji msaada na nini?</div>
-        <div class="quiz-options">
-            <button class="quiz-opt" onclick="quizAnswer(0,0)">🧾 <span class="en">Tax / KRA related</span><span class="sw">Kodi / KRA</span></button>
-            <button class="quiz-opt" onclick="quizAnswer(0,1)">🌐 <span class="en">Government portal / ID</span><span class="sw">Tovuti ya serikali / Kitambulisho</span></button>
-            <button class="quiz-opt" onclick="quizAnswer(0,2)">🏥 <span class="en">Health insurance / SHA</span><span class="sw">Bima ya afya / SHA</span></button>
-            <button class="quiz-opt" onclick="quizAnswer(0,3)">🚗 <span class="en">Driving / vehicle / NTSA</span><span class="sw">Leseni / gari / NTSA</span></button>
-            <button class="quiz-opt" onclick="quizAnswer(0,4)">🏢 <span class="en">Start a business</span><span class="sw">Anzisha biashara</span></button>
-        </div>
-    </div>
-    <div class="quiz-step" id="qStep1">
-        <div class="quiz-q en">Do you already have a KRA PIN?</div><div class="quiz-q sw">Je, una KRA PIN tayari?</div>
-        <div class="quiz-options">
-            <button class="quiz-opt" onclick="quizResult('KRA Nil Returns','You need to file Nil Returns. Takes about 10 minutes. Just bring your National ID and KRA PIN.')">✅ <span class="en">Yes — I have a PIN</span><span class="sw">Ndiyo — nina PIN</span></button>
-            <button class="quiz-opt" onclick="quizResult('KRA PIN Registration','You need a new KRA PIN. We just need your ID Number and Date of Birth.')">❌ <span class="en">No — I need a PIN</span><span class="sw">Hapana — ninahitaji PIN</span></button>
-            <button class="quiz-opt" onclick="quizResult('KRA PIN Retrieval','You need KRA PIN Retrieval. Just provide your National ID number.')">🔍 <span class="en">I lost / forgot my PIN</span><span class="sw">Nimesahau PIN yangu</span></button>
-        </div>
-    </div>
-    <div class="quiz-result" id="quizResult">
-        <div class="quiz-result-title" id="quizResultTitle"></div>
-        <div class="quiz-result-desc" id="quizResultDesc"></div>
-        <button class="quiz-restart" onclick="quizRestart()">↩ <span class="en">Start over</span><span class="sw">Anza upya</span></button>
-    </div>
-</div>
+  const handleLogoPress = () => { pressTimer.current = setTimeout(() => { setPage("superadmin-prompt"); }, 1500); };
+  const handleLogoRelease = () => clearTimeout(pressTimer.current);
 
-<!-- ── Services ── -->
-<h2 class="section-title"><span class="en">Our Services</span><span class="sw">Huduma Zetu</span></h2>
-<div class="services-grid">
+  const navItems = [
+    { id: "home", label: "Home", icon: "🏠" },
+    { id: "services", label: "Services", icon: "⚡" },
+    { id: "tracker", label: "Track Request", icon: "🔍" },
+    { id: "admin", label: "Admin", icon: "🛡️" },
+  ];
 
-    <div class="service-card" onclick="toggleService(this)">
-        <div class="service-card-header"><span class="service-icon">🏛️</span><span class="service-name">KRA Services</span><span class="service-toggle">▼</span></div>
-        <p class="service-desc en">PIN registration, nil & income returns, PIN retrieval.</p>
-        <p class="service-desc sw">Usajili wa PIN, marejesho ya sifuri na mapato.</p>
-        <div class="service-detail">
-            <div class="service-detail-row"><strong>Nil Returns:</strong><span>10 mins — National ID & KRA PIN</span></div>
-            <div class="service-detail-row"><strong>Income Returns:</strong><span>25 mins — ID, PIN & income details</span></div>
-            <div class="service-detail-row"><strong>New PIN:</strong><span>ID Number & Date of Birth</span></div>
-            <div class="service-detail-row"><strong>PIN Retrieval:</strong><span>National ID Number only</span></div>
-            <div class="chips-row">
-                <a class="contact-chip chip-email" href="mailto:individual@kraservice.co.ke">✉ Individual</a>
-                <a class="contact-chip chip-email" href="mailto:nonindividual@kraservice.co.ke">✉ Non-Individual</a>
-                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
-                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+  return (
+    <nav className={`nav-glass glass ${scrolled ? "glow" : ""}`} style={{ borderBottom: scrolled ? "1px solid var(--glass-border)" : "1px solid transparent", paddingTop: 14, paddingBottom: 14 }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div onMouseDown={handleLogoPress} onMouseUp={handleLogoRelease} onTouchStart={handleLogoPress} onTouchEnd={handleLogoRelease}
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+          <div className="animate-pulse-glow" style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#10b981,#059669)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900 }}>
+            OA
+          </div>
+          <div>
+            <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 18, background: "linear-gradient(135deg,#fff,#10b981)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              Online Agency
             </div>
+            <div style={{ fontSize: 10, color: "var(--text3)", letterSpacing: 1 }}>KENYA DIGITAL SERVICES</div>
+          </div>
         </div>
-    </div>
 
-    <div class="service-card" onclick="toggleService(this)">
-        <div class="service-card-header"><span class="service-icon">🌐</span><span class="service-name">eCitizen Services</span><span class="service-toggle">▼</span></div>
-        <p class="service-desc en">Account recovery, new registration, portal help.</p>
-        <p class="service-desc sw">Urejeshaji wa akaunti na usaidizi wa eCitizen.</p>
-        <div class="service-detail">
-            <div class="service-detail-row"><strong>Recovery:</strong><span>30 mins — ID Number & phone access</span></div>
-            <div class="service-detail-row"><strong>New Account:</strong><span>National ID & passport photo</span></div>
-            <div class="chips-row">
-                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
-                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <StatusBadge />
+          {nightMode && <span className="tag" style={{ background: "rgba(99,102,241,.2)", color: "#a5b4fc", border: "1px solid #6366f1" }}>🌙 Night Mode</span>}
+
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="nav-links">
+            {navItems.map(item => (
+              <button key={item.id} onClick={() => { setPage(item.id); setMenuOpen(false); }}
+                style={{ background: page === item.id ? "rgba(16,185,129,.15)" : "transparent", color: page === item.id ? "var(--em)" : "var(--text2)", border: page === item.id ? "1px solid rgba(16,185,129,.3)" : "1px solid transparent", padding: "8px 14px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 14, transition: "all .2s", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 14 }}>{item.icon}</span>
+                <span className="hide-mobile">{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <button style={{ background: "none", border: "none", color: "var(--text)", cursor: "pointer", fontSize: 22, display: "none" }} className="menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
+      </div>
+
+      {menuOpen && (
+        <div className="glass" style={{ marginTop: 12, borderRadius: 14, padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => { setPage(item.id); setMenuOpen(false); }}
+              style={{ background: page === item.id ? "rgba(16,185,129,.15)" : "transparent", color: page === item.id ? "var(--em)" : "var(--text)", border: "none", padding: "12px 16px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 15, textAlign: "left", display: "flex", gap: 10 }}>
+              {item.icon} {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <style>{`@media(max-width:640px){.nav-links{display:none!important}.menu-btn{display:flex!important}.hide-mobile{display:none}}`}</style>
+    </nav>
+  );
+}
+
+function ClockWeather({ nightMode }) {
+  const time = useClock();
+  const season = getSeason();
+  const weatherMock = { sunny: { icon: "☀️", temp: 28, desc: "Sunny" }, rainy: { icon: "🌧️", temp: 20, desc: "Rainy" }, normal: { icon: "⛅", temp: 24, desc: "Partly Cloudy" } };
+  const w = weatherMock[season];
+
+  return (
+    <div className="glass card" style={{ display: "inline-flex", flexDirection: "column", gap: 8, minWidth: 200 }}>
+      <div style={{ fontSize: 42, fontWeight: 800, fontFamily: "'Outfit',sans-serif", letterSpacing: -2, color: "var(--em)", textShadow: "0 0 30px currentColor" }}>
+        {time.toTimeString().slice(0, 5)}
+      </div>
+      <div style={{ color: "var(--text2)", fontSize: 13, fontWeight: 500 }}>
+        {time.toLocaleDateString("en-KE", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 8, borderTop: "1px solid var(--glass-border)" }}>
+        <span style={{ fontSize: 20 }}>{w.icon}</span>
+        <span style={{ fontWeight: 700, color: "var(--text)" }}>{w.temp}°C</span>
+        <span style={{ color: "var(--text2)", fontSize: 13 }}>{w.desc} · Nairobi</span>
+      </div>
+    </div>
+  );
+}
+
+function TypingHeadline({ texts }) {
+  const [idx, setIdx] = useState(0);
+  const [char, setChar] = useState(0);
+  const [del, setDel] = useState(false);
+
+  useEffect(() => {
+    const current = texts[idx];
+    if (!del && char < current.length) {
+      const t = setTimeout(() => setChar(c => c + 1), 60);
+      return () => clearTimeout(t);
+    } else if (!del && char === current.length) {
+      const t = setTimeout(() => setDel(true), 2000);
+      return () => clearTimeout(t);
+    } else if (del && char > 0) {
+      const t = setTimeout(() => setChar(c => c - 1), 35);
+      return () => clearTimeout(t);
+    } else if (del && char === 0) {
+      setDel(false);
+      setIdx(i => (i + 1) % texts.length);
+    }
+  }, [char, del, idx, texts]);
+
+  return (
+    <span className="neon-text" style={{ fontWeight: 800 }}>
+      {texts[idx].slice(0, char)}
+      <span style={{ animation: "blink 1s infinite" }}>|</span>
+    </span>
+  );
+}
+
+function HeroSection({ setPage, profile, nightMode }) {
+  const greeting = getGreeting();
+  return (
+    <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden", paddingTop: 80 }}>
+      {/* Aurora background */}
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 80% 60% at 50% -10%, rgba(16,185,129,.12) 0%, transparent 60%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "20%", left: "-10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,.06) 0%, transparent 70%)", animation: "float 6s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", top: "60%", right: "-5%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,.05) 0%, transparent 70%)", animation: "float 8s ease-in-out infinite 2s" }} />
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", width: "100%", display: "grid", gridTemplateColumns: "1fr auto", gap: 48, alignItems: "center" }}>
+        <div className="animate-fade-in">
+          <div className="tag" style={{ background: "rgba(16,185,129,.1)", color: "var(--em)", border: "1px solid rgba(16,185,129,.3)", display: "inline-flex", gap: 6, alignItems: "center", marginBottom: 20 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--em)", animation: "glow-pulse 1.5s infinite" }} />
+            🇰🇪 Kenya's #1 Digital Gov Services Platform
+          </div>
+
+          <h1 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 900, fontSize: "clamp(32px,5vw,64px)", lineHeight: 1.1, marginBottom: 16 }}>
+            {profile ? `${greeting}, ${profile.name.split(" ")[0]}! 👋` : `${greeting}!`}
+            <br />
+            <span style={{ color: "var(--text2)", fontWeight: 700 }}>Fast, Simple </span>
+            <TypingHeadline texts={["eCitizen Help", "KRA Services", "NTSA Assistance", "HELB Support", "Good Conduct", "Passport Help"]} />
+          </h1>
+
+          <p style={{ color: "var(--text2)", fontSize: "clamp(15px,2vw,18px)", lineHeight: 1.7, marginBottom: 32, maxWidth: 520 }}>
+            Skip the queues. Get your government digital services processed fast — KRA, eCitizen, NTSA, HELB, Good Conduct & more. WhatsApp-powered, instant tracking.
+          </p>
+
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <button className="btn-primary" onClick={() => setPage("services")} style={{ fontSize: 16, padding: "14px 32px" }}>
+              ⚡ Browse Services
+            </button>
+            <button className="btn-ghost" onClick={() => setPage("tracker")} style={{ fontSize: 16, padding: "14px 32px" }}>
+              🔍 Track Request
+            </button>
+            <button onClick={() => window.open(`${WHATSAPP_LINK}?text=Hello Online Agency, I need help!`, "_blank")}
+              style={{ background: "rgba(37,211,102,.15)", color: "#25D366", border: "1px solid rgba(37,211,102,.3)", padding: "14px 28px", borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 16, transition: "all .3s" }}>
+              💬 WhatsApp Us
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 32, marginTop: 40, paddingTop: 32, borderTop: "1px solid var(--glass-border)" }}>
+            {[["500+", "Clients Served"], ["8", "Services"], ["24hr", "Fast Processing"], ["99%", "Success Rate"]].map(([num, label]) => (
+              <div key={label}>
+                <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 28, color: "var(--em)" }}>{num}</div>
+                <div style={{ fontSize: 12, color: "var(--text2)" }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <ClockWeather nightMode={nightMode} />
+          <div className="glass card animate-float" style={{ padding: 16 }}>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, letterSpacing: 1 }}>QUICK LINKS</div>
+            {[{ icon: "📱", label: "eCitizen Change" }, { icon: "🔑", label: "KRA PIN" }, { icon: "🏥", label: "SHA Services" }].map(i => (
+              <div key={i.label} onClick={() => setPage("services")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--glass-border)", cursor: "pointer", fontSize: 14, color: "var(--text2)", transition: "color .2s" }}
+                onMouseEnter={e => e.currentTarget.style.color = "var(--em)"} onMouseLeave={e => e.currentTarget.style.color = "var(--text2)"}>
+                <span>{i.icon}</span> {i.label} <span style={{ marginLeft: "auto" }}>→</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ServiceCard({ service, onOrder, showToast }) {
+  const msg = `Hello Online Agency, I want help with: ${service.name}`;
+  return (
+    <div className="glass card" style={{ border: "1px solid var(--glass-border)", position: "relative", overflow: "hidden" }}>
+      {service.popular && (
+        <div style={{ position: "absolute", top: 12, right: 12 }}>
+          <span className="badge" style={{ background: "rgba(245,158,11,.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,.3)" }}>🔥 Popular</span>
+        </div>
+      )}
+
+      <div style={{ fontSize: 40, marginBottom: 12 }}>{service.icon}</div>
+      <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, fontSize: 17, marginBottom: 6, color: "var(--text)" }}>{service.name}</div>
+      <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 14 }} className="badge" style={{ background: "rgba(255,255,255,.05)", color: "var(--text3)", border: "1px solid var(--glass-border)", display: "inline-block" }}>{service.category}</div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, fontSize: 14 }}>
+        <div><span style={{ color: "var(--em)", fontWeight: 700, fontSize: 18 }}>{service.price}</span></div>
+        <div style={{ color: "var(--text2)" }}>⏱ {service.time}</div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button className="btn-primary" style={{ flex: 1, fontSize: 13, padding: "10px 16px" }}
+          onClick={() => { window.open(waLink(msg), "_blank"); onOrder(service); }}>
+          💬 Order via WhatsApp
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ServicesSection({ requests, setRequests, profile, setProfile, setPage, showToast }) {
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+  const [showProfileModal, setShowProfileModal] = useState(!profile);
+  const [nameInput, setNameInput] = useState("");
+  const [idInput, setIdInput] = useState("");
+  const [successReq, setSuccessReq] = useState(null);
+
+  useEffect(() => { setTimeout(() => setLoading(false), 1200); }, []);
+
+  const categories = ["All", ...new Set(SERVICES.map(s => s.category))];
+  const filtered = SERVICES.filter(s =>
+    (filter === "All" || s.category === filter) &&
+    s.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSaveProfile = () => {
+    if (!nameInput.trim() || !idInput.trim()) return showToast("Please fill in all fields", "error");
+    const p = { name: nameInput.trim(), idNumber: idInput.trim() };
+    ls.set("oa_profile", p);
+    setProfile(p);
+    setShowProfileModal(false);
+    showToast("Profile saved! Welcome " + nameInput.split(" ")[0] + " 🎉");
+  };
+
+  const handleOrder = (service) => {
+    if (!profile) { setShowProfileModal(true); return; }
+    const rid = genRequestId();
+    const req = { id: rid, service: service.name, serviceId: service.id, status: "Pending", created: new Date().toISOString(), price: service.price, eta: service.time, clientName: profile.name, clientId: profile.idNumber };
+    const all = [...(ls.get("oa_requests") || []), req];
+    ls.set("oa_requests", all);
+    setRequests(all);
+    setSuccessReq(req);
+    showToast(`Request ${rid} created! ✅`);
+
+    // Simulate status progression
+    setTimeout(() => {
+      const updated = all.map(r => r.id === rid ? { ...r, status: "In Progress" } : r);
+      ls.set("oa_requests", updated);
+      setRequests(updated);
+    }, 5000);
+  };
+
+  if (showProfileModal) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "100px 24px 40px" }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 440, width: "100%", border: "1px solid var(--glass-border)" }}>
+        <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16 }}>👤</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, textAlign: "center", marginBottom: 8 }}>Quick Setup</h2>
+        <p style={{ color: "var(--text2)", textAlign: "center", marginBottom: 24, fontSize: 14 }}>We need basic info to generate your Request ID and track your services. This is stored only on your device.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <input className="input" placeholder="Full Name" value={nameInput} onChange={e => setNameInput(e.target.value)} />
+          <input className="input" placeholder="National ID / Passport Number" value={idInput} onChange={e => setIdInput(e.target.value)} />
+          <button className="btn-primary" style={{ padding: "14px", fontSize: 16 }} onClick={handleSaveProfile}>Save & Continue →</button>
+          {profile && <button className="btn-ghost" onClick={() => setShowProfileModal(false)}>Cancel</button>}
+        </div>
+        <p style={{ fontSize: 11, color: "var(--text3)", textAlign: "center", marginTop: 16 }}>🔒 Your data stays on your device only. Never shared publicly.</p>
+      </div>
+    </div>
+  );
+
+  if (successReq) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "100px 24px 40px" }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 480, width: "100%", border: "1px solid rgba(16,185,129,.3)", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>✅</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 28, marginBottom: 8 }}>Request Created!</h2>
+        <p style={{ color: "var(--text2)", marginBottom: 24 }}>Your WhatsApp message was prepared. Please send it to complete your order.</p>
+
+        <div className="glass" style={{ padding: 20, borderRadius: 14, marginBottom: 24, border: "1px solid rgba(16,185,129,.2)" }}>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 4 }}>YOUR REQUEST ID</div>
+          <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 24, color: "var(--em)", letterSpacing: 2 }}>{successReq.id}</div>
+          <div style={{ fontSize: 13, color: "var(--text2)", marginTop: 8 }}>Save this ID to track your request</div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12, fontSize: 14 }}>
+          <div className="glass" style={{ padding: 12, borderRadius: 10 }}><div style={{ color: "var(--text3)", fontSize: 11 }}>SERVICE</div><div style={{ fontWeight: 600, fontSize: 12, marginTop: 2 }}>{successReq.service}</div></div>
+          <div className="glass" style={{ padding: 12, borderRadius: 10 }}><div style={{ color: "var(--text3)", fontSize: 11 }}>ETA</div><div style={{ fontWeight: 600, fontSize: 12, marginTop: 2, color: "var(--em)" }}>{successReq.eta}</div></div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-primary" style={{ flex: 1 }} onClick={() => { setSuccessReq(null); setPage("tracker"); }}>🔍 Track Request</button>
+          <button className="btn-ghost" style={{ flex: 1 }} onClick={() => setSuccessReq(null)}>← Back to Services</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 1200, margin: "0 auto", padding: "100px 24px 60px" }}>
+      <div className="animate-fade-in" style={{ textAlign: "center", marginBottom: 48 }}>
+        <div className="tag" style={{ background: "rgba(16,185,129,.1)", color: "var(--em)", border: "1px solid rgba(16,185,129,.3)", display: "inline-block", marginBottom: 16 }}>⚡ All Services</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: "clamp(28px,4vw,48px)", marginBottom: 12 }}>
+          Government Digital Services
+        </h2>
+        <p style={{ color: "var(--text2)", fontSize: 16 }}>Fast, reliable assistance for all your Kenya government digital needs</p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "center" }}>
+        <input className="input" placeholder="🔍 Search services..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, minWidth: 200 }} />
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {categories.map(c => (
+            <button key={c} onClick={() => setFilter(c)}
+              style={{ background: filter === c ? "var(--em)" : "rgba(255,255,255,.05)", color: filter === c ? "#000" : "var(--text2)", border: `1px solid ${filter === c ? "var(--em)" : "var(--glass-border)"}`, padding: "8px 16px", borderRadius: 20, cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 600, fontSize: 13, transition: "all .2s" }}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+        {loading ? Array(8).fill(0).map((_, i) => (
+          <div key={i} className="glass card skeleton" style={{ height: 220, border: "1px solid var(--glass-border)" }} />
+        )) : filtered.map(s => (
+          <ServiceCard key={s.id} service={s} onOrder={handleOrder} showToast={showToast} />
+        ))}
+      </div>
+
+      {profile && (
+        <div className="glass-strong card" style={{ marginTop: 32, border: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg,var(--em),#059669)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 15 }}>Profile Active</div>
+              <div style={{ color: "var(--text2)", fontSize: 12 }}>Your requests are being tracked</div>
             </div>
+          </div>
+          <button className="btn-ghost" style={{ fontSize: 13, padding: "8px 16px" }} onClick={() => setShowProfileModal(true)}>Edit Profile</button>
         </div>
+      )}
     </div>
+  );
+}
 
-    <div class="service-card" onclick="toggleService(this)">
-        <div class="service-card-header"><span class="service-icon">🏥</span><span class="service-name">SHA Services</span><span class="service-toggle">▼</span></div>
-        <p class="service-desc en">SHA registration, dependants & contribution updates.</p>
-        <p class="service-desc sw">Usajili wa SHA, tegemezi na masasisho ya mchango.</p>
-        <div class="service-detail">
-            <div class="service-detail-row"><strong>Registration:</strong><span>New SHA member setup</span></div>
-            <div class="service-detail-row"><strong>Dependants:</strong><span>Adding family members</span></div>
-            <div class="service-detail-row"><strong>Contributions:</strong><span>Verification & updates</span></div>
-            <div class="chips-row">
-                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
-                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+function TrackerPage({ requests, setRequests, showToast }) {
+  const [search, setSearch] = useState("");
+  const [found, setFound] = useState(null);
+  const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSearch = () => {
+    if (!search.trim()) return;
+    setLoading(true);
+    setSearched(true);
+    setTimeout(() => {
+      const allReqs = ls.get("oa_requests") || [];
+      const req = allReqs.find(r => r.id.toLowerCase() === search.trim().toLowerCase());
+      setFound(req || null);
+      setLoading(false);
+      if (!req) showToast("Request ID not found", "error");
+    }, 1200);
+  };
+
+  const statusSteps = ["Pending", "In Progress", "Completed"];
+  const allReqs = ls.get("oa_requests") || [];
+
+  const simulateProgress = (req) => {
+    if (req.status === "Completed") { showToast("Already completed!", "info"); return; }
+    const next = req.status === "Pending" ? "In Progress" : "Completed";
+    const updated = allReqs.map(r => r.id === req.id ? { ...r, status: next } : r);
+    ls.set("oa_requests", updated);
+    setRequests(updated);
+    setFound({ ...req, status: next });
+    showToast(`Status updated to ${next}!`);
+  };
+
+  return (
+    <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 900, margin: "0 auto", padding: "100px 24px 60px" }}>
+      <div className="animate-fade-in" style={{ textAlign: "center", marginBottom: 48 }}>
+        <div className="tag" style={{ background: "rgba(59,130,246,.1)", color: "#60a5fa", border: "1px solid rgba(59,130,246,.3)", display: "inline-block", marginBottom: 16 }}>🔍 Request Tracker</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: "clamp(28px,4vw,48px)", marginBottom: 12 }}>Track Your Request</h2>
+        <p style={{ color: "var(--text2)", fontSize: 16 }}>Enter your Request ID to see the live status of your service request</p>
+      </div>
+
+      <div className="glass-strong card" style={{ border: "1px solid var(--glass-border)", marginBottom: 32 }}>
+        <div style={{ display: "flex", gap: 12 }}>
+          <input className="input" placeholder="Enter Request ID (e.g. OA-M9XA1B-7K2P)" value={search} onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSearch()} style={{ flex: 1, fontSize: 16 }} />
+          <button className="btn-primary" style={{ padding: "14px 24px", whiteSpace: "nowrap" }} onClick={handleSearch}>
+            {loading ? "⏳" : "🔍 Track"}
+          </button>
+        </div>
+      </div>
+
+      {loading && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {[1, 2].map(i => <div key={i} className="glass card skeleton" style={{ height: 120, border: "1px solid var(--glass-border)" }} />)}
+        </div>
+      )}
+
+      {!loading && searched && !found && (
+        <div className="glass card" style={{ border: "1px solid var(--glass-border)", textAlign: "center", padding: 48 }}>
+          <div style={{ fontSize: 64, marginBottom: 16 }}>🔍</div>
+          <h3 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 8 }}>Request Not Found</h3>
+          <p style={{ color: "var(--text2)" }}>No request with that ID exists. Please check and try again.</p>
+        </div>
+      )}
+
+      {!loading && found && (
+        <div className="glass-strong card animate-fade-in" style={{ border: `1px solid ${STATUS_COLORS[found.status]}33` }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
+            <div>
+              <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 22, marginBottom: 4 }}>{found.id}</div>
+              <div style={{ color: "var(--text2)", fontSize: 14 }}>{found.service}</div>
             </div>
-        </div>
-    </div>
-
-    <div class="service-card" onclick="toggleService(this)">
-        <div class="service-card-header"><span class="service-icon">🚗</span><span class="service-name">NTSA Services</span><span class="service-toggle">▼</span></div>
-        <p class="service-desc en">Smart DL, vehicle transfer, inspection & TIMs.</p>
-        <p class="service-desc sw">Leseni ya Smart, uhamisho wa gari na TIMs.</p>
-        <div class="service-detail">
-            <div class="service-detail-row"><strong>Smart DL:</strong><span>Smart driving licence application</span></div>
-            <div class="service-detail-row"><strong>Transfer:</strong><span>Vehicle ownership transfer</span></div>
-            <div class="service-detail-row"><strong>Inspection:</strong><span>Vehicle inspection booking</span></div>
-            <div class="service-detail-row"><strong>TIMs:</strong><span>Account setup & recovery</span></div>
-            <div class="chips-row">
-                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
-                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+            <div style={{ padding: "8px 16px", borderRadius: 20, background: STATUS_BG[found.status], border: `1px solid ${STATUS_COLORS[found.status]}`, color: STATUS_COLORS[found.status], fontWeight: 700, fontSize: 14 }}>
+              {found.status === "Pending" ? "🟡" : found.status === "In Progress" ? "🔵" : "🟢"} {found.status}
             </div>
-        </div>
-    </div>
+          </div>
 
-    <div class="service-card" onclick="toggleService(this)">
-        <div class="service-card-header"><span class="service-icon">🏢</span><span class="service-name">Business Registration</span><span class="service-toggle">▼</span></div>
-        <p class="service-desc en">Business name search, registration & certification.</p>
-        <p class="service-desc sw">Utafutaji wa jina la biashara, usajili na cheti.</p>
-        <div class="service-detail">
-            <div class="service-detail-row"><strong>Name Search:</strong><span>24 hrs — 3 names required</span></div>
-            <div class="service-detail-row"><strong>Registration:</strong><span>ID, KRA PIN & business details</span></div>
-            <div class="chips-row">
-                <a class="contact-chip chip-wa" href="https://wa.me/254100733790"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</a>
-                <a class="contact-chip chip-call" href="tel:+254100733790">📞 Call</a>
+          {/* Stepper */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+              {statusSteps.map((step, i) => {
+                const stepIdx = statusSteps.indexOf(found.status);
+                const done = i <= stepIdx;
+                return (
+                  <div key={step} style={{ display: "flex", alignItems: "center", flex: i < 2 ? 1 : "none" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                      <div style={{ width: 36, height: 36, borderRadius: "50%", background: done ? "var(--em)" : "rgba(255,255,255,.1)", border: done ? "none" : "2px solid rgba(255,255,255,.2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, color: done ? "#000" : "var(--text3)", boxShadow: done ? "var(--neon)" : "none", transition: "all .5s" }}>
+                        {done ? "✓" : i + 1}
+                      </div>
+                      <div style={{ fontSize: 11, color: done ? "var(--em)" : "var(--text3)", marginTop: 6, whiteSpace: "nowrap" }}>{step}</div>
+                    </div>
+                    {i < 2 && <div style={{ flex: 1, height: 2, background: done && i < stepIdx ? "var(--em)" : "rgba(255,255,255,.1)", margin: "0 8px", marginBottom: 20, transition: "all .5s" }} />}
+                  </div>
+                );
+              })}
             </div>
+
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: found.status === "Pending" ? "10%" : found.status === "In Progress" ? "55%" : "100%" }} />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 20 }}>
+            {[["📅 Created", new Date(found.created).toLocaleDateString()], ["💰 Price", found.price], ["⏱ ETA", found.eta]].map(([l, v]) => (
+              <div key={l} className="glass" style={{ padding: 12, borderRadius: 12 }}>
+                <div style={{ fontSize: 11, color: "var(--text3)" }}>{l}</div>
+                <div style={{ fontWeight: 700, marginTop: 4 }}>{v}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button className="btn-primary" style={{ fontSize: 13 }} onClick={() => window.open(`${WHATSAPP_LINK}?text=Hi, I am following up on request ID: ${found.id}`, "_blank")}>
+              💬 Follow Up on WhatsApp
+            </button>
+            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => simulateProgress(found)}>
+              ⚡ Simulate Progress
+            </button>
+          </div>
         </div>
-    </div>
+      )}
 
-</div>
-
-<!-- ── Status Tracker ── -->
-<h2 class="section-title"><span class="en">Track Your Request</span><span class="sw">Fuatilia Ombi Lako</span></h2>
-<div class="tracker-box">
-    <h3>🔍 <span class="en">Enter your reference code</span><span class="sw">Ingiza nambari ya rejea</span></h3>
-    <div class="tracker-input-row">
-        <input class="tracker-input" id="trackerInput" placeholder="e.g. CSA-2847" maxlength="10">
-        <button class="tracker-btn" onclick="checkStatus()"><span class="en">Check</span><span class="sw">Angalia</span></button>
-    </div>
-    <div class="tracker-result" id="trackerResult"></div>
-    <p style="font-size:11px;color:var(--text-muted);margin:8px 0 0"><span class="en">Reference code is generated when you submit an order below.</span><span class="sw">Nambari ya rejea hutolewa unapoweka ombi hapa chini.</span></p>
-</div>
-
-<!-- ── Book a Time Slot ── -->
-<h2 class="section-title"><span class="en">Book a Time Slot</span><span class="sw">Panga Wakati</span></h2>
-<div class="booking-box">
-    <h3>📅 <span class="en">Pick an available slot for today</span><span class="sw">Chagua nafasi inayopatikana leo</span></h3>
-    <div class="slots-grid" id="slotsGrid"></div>
-    <button class="slot-confirm-btn" id="slotConfirmBtn" onclick="confirmSlot()"><span class="en">✓ Confirm Booking via WhatsApp</span><span class="sw">✓ Thibitisha Nafasi kwa WhatsApp</span></button>
-    <div class="slot-confirmed" id="slotConfirmed"></div>
-</div>
-
-<!-- ── Order Form ── -->
-<div class="hero-card">
-    <h1><span class="en">Send a Request</span><span class="sw">Tuma Ombi</span></h1>
-    <p class="subtitle en">Fill in your details — your reference code is generated instantly.</p>
-    <p class="subtitle sw">Jaza maelezo yako — nambari ya rejea itatolewa mara moja.</p>
-    <div class="form-group">
-        <label><span class="en">Your Name</span><span class="sw">Jina Lako</span></label>
-        <input type="text" id="clientName" placeholder="e.g. Mwangi J.">
-    </div>
-    <div class="form-group">
-        <label><span class="en">Phone Number</span><span class="sw">Nambari ya Simu</span></label>
-        <input type="tel" id="clientPhone" placeholder="07XX XXX XXX">
-    </div>
-    <div class="form-group">
-        <label><span class="en">Select Service</span><span class="sw">Chagua Huduma</span></label>
-        <select id="serviceSelect">
-            <option>KRA Nil Returns</option>
-            <option>KRA Income Returns</option>
-            <option>KRA PIN Registration</option>
-            <option>KRA PIN Retrieval</option>
-            <option>eCitizen Account Recovery</option>
-            <option>eCitizen New Account</option>
-            <option>SHA Registration</option>
-            <option>SHA — Add Dependants</option>
-            <option>NTSA — Smart Driving Licence</option>
-            <option>NTSA — Vehicle Transfer</option>
-            <option>NTSA — TIMs Account</option>
-            <option>Business Name Registration</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label><span class="en">Upload ID / Passport Photo (optional)</span><span class="sw">Pakia Picha ya Kitambulisho (hiari)</span></label>
-        <div class="upload-box" onclick="document.getElementById('fileUpload').click()">
-            <div id="uploadPrompt">📷 <span class="en">Tap to upload photo or selfie</span><span class="sw">Bonyeza kupakia picha</span></div>
-            <input type="file" id="fileUpload" accept="image/*" capture="environment" onchange="previewFile(this)">
-            <div class="upload-preview" id="uploadPreview"><img id="uploadImg" src="" alt="Preview"></div>
+      {/* Request History */}
+      {allReqs.length > 0 && (
+        <div style={{ marginTop: 40 }}>
+          <h3 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 16 }}>📋 Request History ({allReqs.length})</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {allReqs.slice().reverse().map(req => (
+              <div key={req.id} className="glass card" style={{ border: `1px solid ${STATUS_COLORS[req.status]}22`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, cursor: "pointer" }}
+                onClick={() => { setSearch(req.id); setFound(req); setSearched(true); }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15, fontFamily: "'Poppins',sans-serif" }}>{req.id}</div>
+                  <div style={{ color: "var(--text2)", fontSize: 13 }}>{req.service}</div>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <span style={{ color: "var(--text3)", fontSize: 12 }}>{new Date(req.created).toLocaleDateString()}</span>
+                  <span style={{ padding: "4px 12px", borderRadius: 20, background: STATUS_BG[req.status], color: STATUS_COLORS[req.status], fontSize: 12, fontWeight: 700 }}>{req.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
     </div>
-    <div class="form-group">
-        <label><span class="en">Additional Notes (optional)</span><span class="sw">Maelezo Zaidi (hiari)</span></label>
-        <textarea id="clientNotes" rows="2" placeholder="Any extra details..."></textarea>
+  );
+}
+
+function AdminPage({ requests, setRequests, role, setRole, showToast }) {
+  const [adminPwd, setAdminPwd] = useState("");
+  const [authenticated, setAuthenticated] = useState(role === "admin" || role === "superadmin");
+  const allReqs = ls.get("oa_requests") || [];
+  const [filter, setFilter] = useState("All");
+
+  const handleAuth = () => {
+    if (adminPwd === "ADMIN2024" || adminPwd === SUPER_ADMIN_PASSWORD) {
+      const newRole = adminPwd === SUPER_ADMIN_PASSWORD ? "superadmin" : "admin";
+      setRole(newRole);
+      ls.set("oa_role", newRole);
+      setAuthenticated(true);
+      showToast(`Welcome ${newRole === "superadmin" ? "Super Admin 🔐" : "Admin"}!`);
+    } else showToast("Invalid password", "error");
+  };
+
+  const updateStatus = (id, status) => {
+    const updated = allReqs.map(r => r.id === id ? { ...r, status } : r);
+    ls.set("oa_requests", updated);
+    setRequests(updated);
+    showToast(`Updated to ${status}!`);
+  };
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(allReqs, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `oa_requests_${Date.now()}.json`; a.click();
+    showToast("Data exported!");
+  };
+
+  if (!authenticated) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "100px 24px 40px" }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 400, width: "100%", border: "1px solid var(--glass-border)", textAlign: "center" }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>🛡️</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, marginBottom: 8 }}>Admin Access</h2>
+        <p style={{ color: "var(--text2)", marginBottom: 24, fontSize: 14 }}>Enter admin password to access the dashboard</p>
+        <input className="input" type="password" placeholder="Admin Password" value={adminPwd} onChange={e => setAdminPwd(e.target.value)} onKeyDown={e => e.key === "Enter" && handleAuth()} style={{ marginBottom: 12 }} />
+        <button className="btn-primary" style={{ width: "100%", padding: 14 }} onClick={handleAuth}>Access Dashboard →</button>
+        <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 12 }}>Demo: ADMIN2024 | Super: SUPERADMIN2024</p>
+      </div>
     </div>
-    <button class="btn btn-dark" onclick="generateOrder()">⚡ <span class="en">Generate Reference & Preview</span><span class="sw">Tengeneza Nambari ya Rejea</span></button>
-    <div class="order-ref" id="orderRef">
-        <div class="order-ref-label en">Your Reference Code</div><div class="order-ref-label sw">Nambari Yako ya Rejea</div>
-        <div class="order-ref-code" id="orderRefCode">---</div>
-        <div class="order-ref-note en">Save this to track your request above.</div><div class="order-ref-note sw">Hifadhi nambari hii kufuatilia ombi lako.</div>
-    </div>
-    <button class="btn btn-wa" id="whatsappBtn" style="margin-top:10px">
-        <svg class="wa-icon" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.742.002-2.602-1.01-5.05-2.85-6.892-1.84-1.842-4.29-2.856-6.896-2.858-5.442 0-9.867 4.372-9.87 9.744a9.664 9.664 0 0 0 1.488 5.008l-.195.713-.671 2.451 2.51-.659.715-.188zm11.332-6.837c-.31-.155-1.837-.905-2.11-.1-.274.1-.473.445-.58.568-.109.123-.217.186-.527.03-.31-.155-1.311-.483-2.498-1.541-.924-.824-1.547-1.842-1.728-2.152-.18-.31-.019-.477.136-.631.14-.139.31-.361.464-.541.155-.18.207-.309.31-.515.103-.206.052-.386-.026-.541-.077-.155-.696-1.677-.954-2.299-.25-.601-.505-.519-.695-.531-.18-.011-.387-.013-.593-.013-.206 0-.541.077-.824.386-.284.309-1.082 1.056-1.082 2.575 0 1.52 1.107 2.99 1.262 3.2 1.55 2.04 2.346 3.22 4.981 4.26 1.83.72 2.62.58 3.56.44.94-.14 2.11-.86 2.4-1.65.29-.79.29-1.47.21-1.61-.08-.14-.29-.22-.6-.375z"/></svg>
-        <span class="en">Send WhatsApp Request</span><span class="sw">Tuma WhatsApp</span>
-    </button>
-    <a class="btn btn-call" href="tel:+254100733790">📞 <span class="en">Call Us Now</span><span class="sw">Piga Simu Sasa</span></a>
-    <button class="btn btn-print" onclick="window.print()">🖨️ <span class="en">Print This Page</span><span class="sw">Chapisha Ukurasa Huu</span></button>
-</div>
+  );
 
-<!-- ── WhatsApp Auto-reply Guide ── -->
-<h2 class="section-title"><span class="en">After You Message Us</span><span class="sw">Baada ya Kutuma Ujumbe</span></h2>
-<div class="wa-guide-box">
-    <h3>💬 <span class="en">What to expect on WhatsApp</span><span class="sw">Unachotazamia kwa WhatsApp</span></h3>
-    <div class="wa-step"><div class="wa-step-icon">1️⃣</div><div class="wa-step-text"><strong class="en">Instant acknowledgment</strong><strong class="sw">Uthibitisho wa haraka</strong><span class="en">You'll receive an automated reply confirming your request was received.</span><span class="sw">Utapokea jibu la moja kwa moja kuthibitisha ombi lako.</span></div></div>
-    <div class="wa-step"><div class="wa-step-icon">2️⃣</div><div class="wa-step-text"><strong class="en">Agent picks up (within 5 mins)</strong><strong class="sw">Wakala anajibu (ndani ya dakika 5)</strong><span class="en">A live agent will confirm your details and clarify any missing info.</span><span class="sw">Wakala wa moja kwa moja atathibitisha maelezo yako.</span></div></div>
-    <div class="wa-step"><div class="wa-step-icon">3️⃣</div><div class="wa-step-text"><strong class="en">Processing begins</strong><strong class="sw">Kazi inaanza</strong><span class="en">Your service is processed. You'll get updates along the way.</span><span class="sw">Huduma yako inashughulikiwa. Utapata masasisho.</span></div></div>
-    <div class="wa-step"><div class="wa-step-icon">4️⃣</div><div class="wa-step-text"><strong class="en">Delivery & payment</strong><strong class="sw">Uwasilishaji na malipo</strong><span class="en">Documents are sent to your WhatsApp. Pay via M-Pesa after receiving.</span><span class="sw">Nyaraka zinatumwa. Lipa kwa M-Pesa baada ya kupokea.</span></div></div>
-</div>
+  const filtered = filter === "All" ? allReqs : allReqs.filter(r => r.status === filter);
+  const stats = { total: allReqs.length, pending: allReqs.filter(r => r.status === "Pending").length, progress: allReqs.filter(r => r.status === "In Progress").length, done: allReqs.filter(r => r.status === "Completed").length };
 
-<!-- ── Referral ── -->
-<div class="referral-box">
-    <h3>🎁 <span class="en">Refer a Friend</span><span class="sw">Pendekeza Rafiki</span></h3>
-    <p class="en">Know someone who needs KRA, SHA or eCitizen help? Share this page!</p>
-    <p class="sw">Unajua mtu anayehitaji msaada? Mshirikishe ukurasa huu!</p>
-    <div class="share-row">
-        <button class="share-btn" onclick="shareWA()"><svg width="13" height="13" viewBox="0 0 24 24" fill="#25d366"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> WhatsApp</button>
-        <button class="share-btn" onclick="copyLink()">🔗 <span class="en">Copy Link</span><span class="sw">Nakili Kiungo</span></button>
-        <button class="share-btn" onclick="nativeShare()">📤 <span class="en">Share</span><span class="sw">Shiriki</span></button>
-    </div>
-</div>
-
-<!-- ── Google Review ── -->
-<a class="google-review-btn" href="https://g.page/r/YOUR_GOOGLE_REVIEW_LINK" target="_blank">
-    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-    <span class="en">Leave Us a Google Review ⭐</span><span class="sw">Tuachie Ukaguzi wa Google ⭐</span>
-</a>
-
-<!-- ── Location ── -->
-<h2 class="section-title"><span class="en">Find Us</span><span class="sw">Tupate</span></h2>
-<div class="location-box">
-    <div class="location-map-placeholder" onclick="openMaps()">
-        <div class="map-pin">📍</div>
-        <div style="font-size:13px;font-weight:700"><span class="en">Tap to open in Google Maps</span><span class="sw">Bonyeza kufungua Ramani za Google</span></div>
-    </div>
-    <div class="location-info">
-        <h4>Online Cyber Services Agency</h4>
-        <p class="en">Nairobi, Kenya · Available online & in-person</p>
-        <p class="sw">Nairobi, Kenya · Inapatikana mtandaoni na ana kwa ana</p>
-        <a class="contact-chip chip-wa" href="https://wa.me/254100733790" style="margin:0"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24z"/></svg> <span class="en">Get Directions on WhatsApp</span><span class="sw">Pata Mwelekeo kwa WhatsApp</span></a>
-    </div>
-</div>
-
-<!-- ── Hours ── -->
-<div class="hours-box">
-    <div class="hours-header"><span class="en">Operating Schedule</span><span class="sw">Ratiba ya Kazi</span> <span class="en">Hours</span><span class="sw">Masaa</span></div>
-    <div class="hours-row"><span class="hours-label en">Monday – Friday</span><span class="hours-label sw">Jumatatu – Ijumaa</span><span class="hours-value">8:00 AM – 5:00 PM</span></div>
-    <div class="hours-row"><span class="hours-label en">Saturday</span><span class="hours-label sw">Jumamosi</span><span class="hours-value">9:00 AM – 1:00 PM</span></div>
-    <div class="hours-row"><span class="hours-label en">Sunday</span><span class="hours-label sw">Jumapili</span><span class="hours-value en">Closed</span><span class="hours-value sw">Imefungwa</span></div>
-</div>
-
-<!-- ── Checklist ── -->
-<div class="checklist-box">
-    <div class="checklist-summary" onclick="toggleEl('checklistContent','checklistArrow')">
-        <span class="en">Required Documentation</span><span class="sw">Nyaraka Zinazohitajika</span>
-        <span id="checklistArrow" style="font-size:11px;color:var(--text-muted)">▼</span>
-    </div>
-    <div id="checklistContent" class="checklist-content">
-        • <strong>KRA Nil Returns:</strong> National ID & KRA PIN.<br>
-        • <strong>KRA New PIN:</strong> ID Number & Date of Birth.<br>
-        • <strong>KRA PIN Retrieval:</strong> National ID Number.<br>
-        • <strong>eCitizen Recovery:</strong> ID Number & phone access.<br>
-        • <strong>SHA Registration:</strong> ID Number & KRA PIN.<br>
-        • <strong>NTSA Services:</strong> ID, KRA PIN & relevant docs.<br>
-        • <strong>Business Setup:</strong> Three unique proposed names.
-    </div>
-</div>
-
-<!-- ── Payment ── -->
-<div class="mpesa-card">
-    <div class="mpesa-header">💳 <span class="en">Payment via M-Pesa</span><span class="sw">Malipo kwa M-Pesa</span></div>
-    <ol class="mpesa-steps">
-        <li class="en">Submit your request securely over WhatsApp.</li>
-        <li class="en">Agent verifies your details for accuracy.</li>
-        <li class="en">Pay via M-Pesa only after work is confirmed done.</li>
-        <li class="sw">Tuma ombi lako kwa WhatsApp kwa usalama.</li>
-        <li class="sw">Wakala wetu atathibitisha maelezo yako.</li>
-        <li class="sw">Lipa kwa M-Pesa baada ya kazi kukamilika.</li>
-    </ol>
-</div>
-
-<!-- ── How It Works ── -->
-<h2 class="section-title"><span class="en">How It Works</span><span class="sw">Jinsi Inavyofanya Kazi</span></h2>
-<div class="steps-container">
-    <div class="step-item"><div class="step-number">1</div><div class="step-text"><h4><span class="en">Choose Your Service</span><span class="sw">Chagua Huduma</span></h4><p><span class="en">Tap any service card or use the quiz above to find what you need.</span><span class="sw">Bonyeza kadi ya huduma au tumia maswali hapo juu.</span></p></div></div>
-    <div class="step-item"><div class="step-number">2</div><div class="step-text"><h4><span class="en">Send Your Request</span><span class="sw">Tuma Ombi Lako</span></h4><p><span class="en">Fill the form, get a reference code, then contact us via WhatsApp or call.</span><span class="sw">Jaza fomu, pata nambari ya rejea, kisha wasiliana nasi.</span></p></div></div>
-    <div class="step-item"><div class="step-number">3</div><div class="step-text"><h4><span class="en">Receive & Pay</span><span class="sw">Pokea na Lipa</span></h4><p><span class="en">Documents delivered to your WhatsApp or email. Pay via M-Pesa after.</span><span class="sw">Nyaraka zinatumwa. Lipa kwa M-Pesa baada ya kupokea.</span></p></div></div>
-</div>
-
-<!-- ── Reviews ── -->
-<h2 class="section-title"><span class="en">Client Feedback</span><span class="sw">Maoni ya Wateja</span></h2>
-<div class="review-card"><div class="review-stars">⭐⭐⭐⭐⭐</div><div class="review-text">"Sorted my locked eCitizen account within 15 minutes. Very professional."</div><div class="review-user">Kevin O., Nairobi</div></div>
-<div class="review-card"><div class="review-stars">⭐⭐⭐⭐⭐</div><div class="review-text">"Filing my KRA returns has never been this smooth. Highly recommend!"</div><div class="review-user">Mary W., Mombasa</div></div>
-<div class="review-card"><div class="review-stars">⭐⭐⭐⭐⭐</div><div class="review-text">"Niliomba usajili wa SHA na ilikamilika haraka sana. Asante sana!"</div><div class="review-user">Aisha M., Kisumu</div></div>
-
-<!-- ── FAQ ── -->
-<h2 class="section-title"><span class="en">Frequently Asked Questions</span><span class="sw">Maswali Yanayoulizwa Mara kwa Mara</span></h2>
-<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">Is my data secure?</span><span class="sw">Je, data yangu iko salama?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">Yes. All data is handled confidentially and never stored or shared. Cleared immediately after delivery.</div><div class="faq-answer sw">Ndiyo. Data yako inashughulikiwa kwa siri na haishirikishwi na watu wengine.</div></div>
-<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">What if my account is locked?</span><span class="sw">Je, akaunti yangu imefungwa?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">Our agent guides you through manual verification via WhatsApp to restore access.</div><div class="faq-answer sw">Wakala wetu atakusaidia hatua kwa hatua kupitia WhatsApp kufungua akaunti yako.</div></div>
-<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">How do I pay?</span><span class="sw">Ninalipaje?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">Via M-Pesa after your request is processed. You only pay once work is done.</div><div class="faq-answer sw">Kwa M-Pesa baada ya kazi kukamilika. Unalipa tu kazi inapokwisha.</div></div>
-<div class="faq-item"><div class="faq-question" onclick="toggleFaq(this)"><span class="en">What is the KRA deadline?</span><span class="sw">Tarehe ya mwisho ya KRA ni lini?</span><span style="font-size:11px;color:var(--text-muted)">▼</span></div><div class="faq-answer en">KRA annual returns are due June 30 each year. Late filing attracts a Ksh 2,000 penalty or 5% of tax due.</div><div class="faq-answer sw">Marejesho ya KRA huisha Juni 30 kila mwaka. Kuchelewa huleta faini ya Ksh 2,000.</div></div>
-
-<!-- ── Preview Panel ── -->
-<div class="agent-panel-demo">
-    <span class="demo-badge">LIVE PREVIEW</span>
-    <h3 style="margin:0 0 4px;font-family:'Syne',sans-serif"><span class="en">Request Summary</span><span class="sw">Muhtasari wa Ombi</span></h3>
-    <p style="color:var(--text-muted);font-size:13px;margin:0 0 8px"><span class="en">Updates when you generate a reference above.</span><span class="sw">Inasasishwa unapozalisha nambari ya rejea.</span></p>
-    <div class="request-card">
-        <div><strong id="demoName">Guest Client</strong><br><span style="font-size:12px;color:var(--text-muted)" class="en">Service</span><span style="font-size:12px;color:var(--text-muted)" class="sw">Huduma</span><br><span style="color:#60a5fa;font-size:13px;font-weight:600" id="demoService">KRA Nil Returns</span><br><span style="font-size:11px;color:var(--text-muted)" id="demoRef"></span></div>
-        <span class="status-badge en">Ready</span><span class="status-badge sw">Tayari</span>
-    </div>
-</div>
-
-<!-- ── Admin ── -->
-<div class="admin-trigger"><button onclick="document.getElementById('adminOverlay').classList.add('open')">🔒 <span class="en">Admin Login</span><span class="sw">Ingia kama Msimamizi</span></button></div>
-<div class="admin-overlay" id="adminOverlay">
-    <div class="admin-panel">
-        <button class="admin-close" onclick="document.getElementById('adminOverlay').classList.remove('open')">✕</button>
-        <h3>🔒 <span class="en">Admin Panel</span><span class="sw">Paneli ya Msimamizi</span></h3>
-        <div id="adminLoginSection">
-            <input class="admin-input" type="password" id="adminPass" placeholder="Enter password">
-            <button class="admin-login-btn" onclick="adminLogin()"><span class="en">Login</span><span class="sw">Ingia</span></button>
-            <p style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center" class="en">Default password: admin123</p>
+  return (
+    <div style={{ paddingTop: 100, paddingBottom: 60, maxWidth: 1200, margin: "0 auto", padding: "100px 24px 60px" }}>
+      <div className="animate-fade-in" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16, marginBottom: 32 }}>
+        <div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
+            <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 32 }}>Admin Dashboard</h2>
+            {role === "superadmin" && <span className="badge" style={{ background: "rgba(239,68,68,.2)", color: "#fca5a5", border: "1px solid rgba(239,68,68,.3)" }}>⚡ Super Admin</span>}
+          </div>
+          <p style={{ color: "var(--text2)" }}>Manage all service requests and client interactions</p>
         </div>
-        <div id="adminContent" style="display:none">
-            <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px" class="en">All submitted orders this session:</p>
-            <div id="adminOrders"></div>
-            <button class="admin-login-btn" style="background:#ef4444;margin-top:10px" onclick="adminLogout()"><span class="en">Logout</span><span class="sw">Toka</span></button>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-ghost" style={{ fontSize: 13 }} onClick={exportData}>📥 Export JSON</button>
+          <button style={{ background: "rgba(239,68,68,.1)", color: "#fca5a5", border: "1px solid rgba(239,68,68,.3)", padding: "10px 20px", borderRadius: 10, cursor: "pointer", fontWeight: 600, fontFamily: "'Outfit',sans-serif", fontSize: 13 }}
+            onClick={() => { ls.set("oa_role", "guest"); setRole("guest"); setAuthenticated(false); }}>Logout</button>
         </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16, marginBottom: 32 }}>
+        {[{ label: "Total Requests", val: stats.total, color: "#60a5fa", icon: "📊" }, { label: "Pending", val: stats.pending, color: "#f59e0b", icon: "🟡" }, { label: "In Progress", val: stats.progress, color: "#3b82f6", icon: "🔵" }, { label: "Completed", val: stats.done, color: "#10b981", icon: "🟢" }].map(s => (
+          <div key={s.label} className="glass card" style={{ border: `1px solid ${s.color}22`, textAlign: "center" }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>{s.icon}</div>
+            <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 36, color: s.color }}>{s.val}</div>
+            <div style={{ fontSize: 13, color: "var(--text2)" }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts (mock) */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 32 }}>
+        <div className="glass card" style={{ border: "1px solid var(--glass-border)" }}>
+          <h4 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 16 }}>📈 Service Popularity</h4>
+          {SERVICES.slice(0, 5).map((s, i) => {
+            const count = allReqs.filter(r => r.serviceId === s.id).length;
+            const max = Math.max(...SERVICES.map(sv => allReqs.filter(r => r.serviceId === sv.id).length), 1);
+            return (
+              <div key={s.id} style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                  <span style={{ color: "var(--text2)" }}>{s.icon} {s.name.slice(0, 20)}...</span>
+                  <span style={{ fontWeight: 700, color: "var(--em)" }}>{count}</span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${max > 0 ? (count / max) * 100 : 0}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="glass card" style={{ border: "1px solid var(--glass-border)" }}>
+          <h4 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, marginBottom: 16 }}>⚡ Quick Actions</h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button className="btn-primary" onClick={() => window.open(`${WHATSAPP_LINK}?text=Hello, checking on pending requests`, "_blank")}>💬 Open WhatsApp</button>
+            <button className="btn-ghost" onClick={exportData}>📥 Export All Data</button>
+            <div className="glass" style={{ padding: 12, borderRadius: 10, fontSize: 13 }}>
+              <div style={{ color: "var(--text3)", marginBottom: 4 }}>Contact</div>
+              <div style={{ color: "var(--em)", fontWeight: 600 }}>{BUSINESS_EMAIL}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Requests Table */}
+      <div className="glass card" style={{ border: "1px solid var(--glass-border)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+          <h4 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 700, fontSize: 18 }}>All Requests ({filtered.length})</h4>
+          <div style={{ display: "flex", gap: 8 }}>
+            {["All", "Pending", "In Progress", "Completed"].map(f => (
+              <button key={f} onClick={() => setFilter(f)}
+                style={{ background: filter === f ? "var(--em)" : "transparent", color: filter === f ? "#000" : "var(--text2)", border: `1px solid ${filter === f ? "var(--em)" : "var(--glass-border)"}`, padding: "6px 14px", borderRadius: 20, cursor: "pointer", fontWeight: 600, fontSize: 12, fontFamily: "'Outfit',sans-serif" }}>
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+            <p>No requests yet</p>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--glass-border)" }}>
+                  {["Request ID", "Service", "Status", "Created", ...(role === "superadmin" ? ["Client", "ID No."] : []), "Actions"].map(h => (
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 12, color: "var(--text3)", fontWeight: 600, letterSpacing: .5 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.slice().reverse().map(req => (
+                  <tr key={req.id} style={{ borderBottom: "1px solid var(--glass-border)" }}>
+                    <td style={{ padding: "12px", fontFamily: "'Poppins',sans-serif", fontWeight: 700, fontSize: 13, color: "var(--em)" }}>{req.id}</td>
+                    <td style={{ padding: "12px", fontSize: 13, color: "var(--text)" }}>{req.service.slice(0, 25)}...</td>
+                    <td style={{ padding: "12px" }}>
+                      <span style={{ padding: "4px 10px", borderRadius: 20, background: STATUS_BG[req.status], color: STATUS_COLORS[req.status], fontSize: 11, fontWeight: 700 }}>{req.status}</span>
+                    </td>
+                    <td style={{ padding: "12px", fontSize: 12, color: "var(--text2)" }}>{new Date(req.created).toLocaleDateString()}</td>
+                    {role === "superadmin" && <>
+                      <td style={{ padding: "12px", fontSize: 13 }}>{req.clientName || "—"}</td>
+                      <td style={{ padding: "12px", fontSize: 12, color: "var(--text2)" }}>{req.clientId ? `****${req.clientId.slice(-4)}` : "—"}</td>
+                    </>}
+                    <td style={{ padding: "12px" }}>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {["Pending", "In Progress", "Completed"].filter(s => s !== req.status).map(s => (
+                          <button key={s} onClick={() => updateStatus(req.id, s)}
+                            style={{ background: STATUS_BG[s], color: STATUS_COLORS[s], border: `1px solid ${STATUS_COLORS[s]}33`, padding: "4px 10px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 600, fontFamily: "'Outfit',sans-serif" }}>
+                            → {s.replace(" ", "\u00A0")}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
-</div>
+  );
+}
 
-<footer>
-    &copy; 2026 Online Cyber Services Agency. All rights reserved.<br>
-    <span style="font-size:11px;opacity:0.6;display:inline-block;margin-top:5px"><span class="en">Independent digital services platform.</span><span class="sw">Jukwaa huru la huduma za kidijitali.</span></span>
-</footer>
-</div>
+function SuperAdminPrompt({ setPage, setRole, showToast }) {
+  const [pwd, setPwd] = useState("");
+  const handle = () => {
+    if (pwd === SUPER_ADMIN_PASSWORD) {
+      setRole("superadmin");
+      ls.set("oa_role", "superadmin");
+      setPage("admin");
+      showToast("⚡ Super Admin Mode Activated!");
+    } else showToast("Wrong master password", "error");
+  };
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div className="glass-strong card animate-fade-in" style={{ maxWidth: 380, width: "100%", border: "1px solid rgba(239,68,68,.3)", textAlign: "center" }}>
+        <div style={{ fontSize: 56, marginBottom: 12 }}>🔐</div>
+        <h2 style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, color: "#fca5a5", marginBottom: 8 }}>Super Admin Mode</h2>
+        <p style={{ color: "var(--text2)", marginBottom: 20, fontSize: 13 }}>Master password required</p>
+        <input className="input" type="password" placeholder="Master Password" value={pwd} onChange={e => setPwd(e.target.value)} onKeyDown={e => e.key === "Enter" && handle()} style={{ marginBottom: 12 }} />
+        <button style={{ background: "rgba(239,68,68,.2)", color: "#fca5a5", border: "1px solid rgba(239,68,68,.4)", padding: "14px", width: "100%", borderRadius: 12, cursor: "pointer", fontWeight: 700, fontSize: 15, fontFamily: "'Outfit',sans-serif" }} onClick={handle}>
+          Activate Super Admin
+        </button>
+        <button className="btn-ghost" style={{ width: "100%", marginTop: 10, fontSize: 13 }} onClick={() => setPage("home")}>Cancel</button>
+      </div>
+    </div>
+  );
+}
 
-<!-- ── Chat Bubble ── -->
-<div class="chat-bubble" id="chatBubble">
-    <button class="chat-bubble-close" onclick="document.getElementById('chatBubble').style.display='none'">✕</button>
-    <p>👋 <span class="en"><strong>Need help?</strong> We're online and ready to assist you right now!</span><span class="sw"><strong>Unahitaji msaada?</strong> Tuko mtandaoni na tayari kukusaidia!</span></p>
-    <a class="chat-bubble-btn" href="https://wa.me/254100733790" target="_blank">💬 <span class="en">Chat with us</span><span class="sw">Zungumza nasi</span></a>
-</div>
+function Chatbot({ showToast }) {
+  const [open, setOpen] = useState(false);
+  const [msgs, setMsgs] = useState([{ role: "bot", text: "Hi! 👋 I'm the Online Agency assistant. How can I help you today?" }]);
+  const [input, setInput] = useState("");
 
-<!-- ── Float WA ── -->
-<a class="float-wa" href="https://wa.me/254100733790" target="_blank">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.411 0 11.989 0c3.183.001 6.177 1.24 8.43 3.496 2.254 2.256 3.491 5.252 3.491 8.434 0 6.583-5.35 11.932-11.931 11.932-2.006-.001-3.974-.503-5.729-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.742.002-2.602-1.01-5.05-2.85-6.892-1.84-1.842-4.29-2.856-6.896-2.858-5.442 0-9.867 4.372-9.87 9.744a9.664 9.664 0 0 0 1.488 5.008l-.195.713-.671 2.451 2.51-.659.715-.188zm11.332-6.837c-.31-.155-1.837-.905-2.11-.1-.274.1-.473.445-.58.568-.109.123-.217.186-.527.03-.31-.155-1.311-.483-2.498-1.541-.924-.824-1.547-1.842-1.728-2.152-.18-.31-.019-.477.136-.631.14-.139.31-.361.464-.541.155-.18.207-.309.31-.515.103-.206.052-.386-.026-.541-.077-.155-.696-1.677-.954-2.299-.25-.601-.505-.519-.695-.531-.18-.011-.387-.013-.593-.013-.206 0-.541.077-.824.386-.284.309-1.082 1.056-1.082 2.575 0 1.52 1.107 2.99 1.262 3.2 1.55 2.04 2.346 3.22 4.981 4.26 1.83.72 2.62.58 3.56.44.94-.14 2.11-.86 2.4-1.65.29-.79.29-1.47.21-1.61-.08-.14-.29-.22-.6-.375z"/></svg>
-</a>
+  const suggestions = ["What services do you offer?", "How much does KRA PIN cost?", "How long does Good Conduct take?", "WhatsApp number?"];
 
-<script>
-// ── Clock ──
-function updateClock(){const e=document.getElementById('liveClock'),n=new Date();let h=n.getHours();const m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0'),a=h>=12?'PM':'AM';h=h%12||12;e.innerText=`${String(h).padStart(2,'0')}:${m}:${s} ${a}`;}
-setInterval(updateClock,1000);updateClock();
+  const respond = (q) => {
+    const lower = q.toLowerCase();
+    let reply = "I can help you with government digital services. Type a question or visit our Services page!";
+    if (lower.includes("kra") && lower.includes("pin")) reply = "KRA PIN Retrieval costs Ksh 200 and takes about 12 hours. Would you like to order? 🔑";
+    else if (lower.includes("good conduct")) reply = "Good Conduct Application costs Ksh 600 and takes 72 hours. We handle the full process! 📋";
+    else if (lower.includes("passport")) reply = "Passport Assistance costs Ksh 800 and takes ~5 days. We guide you through every step. ✈️";
+    else if (lower.includes("whatsapp") || lower.includes("contact")) reply = `You can reach us on WhatsApp: +254100733790 or email: ${BUSINESS_EMAIL} 📱`;
+    else if (lower.includes("price") || lower.includes("cost") || lower.includes("how much")) reply = "Services range from Ksh 200 (KRA PIN) to Ksh 800 (Passport). Check the Services page for full pricing! 💰";
+    else if (lower.includes("service")) reply = "We offer: eCitizen, SHA, KRA PIN, KRA Email, NTSA, HELB, Good Conduct & Passport services! ⚡";
+    return reply;
+  };
 
-// ── Countdown ──
-function updateCountdown(){const d=new Date('2026-06-30T23:59:59')-new Date();if(d<=0){document.getElementById('countdownTimer').innerText='DEADLINE PASSED';return;}const dy=Math.floor(d/86400000),hr=Math.floor((d%86400000)/3600000),mn=Math.floor((d%3600000)/60000);document.getElementById('countdownTimer').innerText=`${String(dy).padStart(2,'0')} : ${String(hr).padStart(2,'0')} : ${String(mn).padStart(2,'0')}`;}
-setInterval(updateCountdown,60000);updateCountdown();
+  const send = (text = input) => {
+    if (!text.trim()) return;
+    const userMsg = { role: "user", text };
+    setMsgs(p => [...p, userMsg]);
+    setInput("");
+    setTimeout(() => setMsgs(p => [...p, { role: "bot", text: respond(text) }]), 800);
+  };
 
-// ── Animated Counters ──
-function animateCounter(id,target,suffix){let v=0;const step=Math.ceil(target/60),t=setInterval(()=>{v=Math.min(v+step,target);document.getElementById(id).innerText=v+(suffix||'');if(v>=target)clearInterval(t);},30);}
-setTimeout(()=>{animateCounter('ctrClients',850,'+');animateCounter('ctrReturns',1247,'+');animateCounter('ctrEcit',320,'+');animateCounter('ctrBiz',180,'+');},500);
+  return (
+    <div className="chatbot">
+      {open && (
+        <div className="glass-strong animate-fade-in" style={{ borderRadius: 20, border: "1px solid var(--glass-border)", marginBottom: 12, overflow: "hidden" }}>
+          <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--glass-border)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(16,185,129,.08)" }}>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>🤖 AI Assistant</div>
+            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "var(--text2)", cursor: "pointer", fontSize: 18 }}>✕</button>
+          </div>
+          <div style={{ height: 220, overflowY: "auto", padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+            {msgs.map((m, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{ maxWidth: "85%", padding: "10px 14px", borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.role === "user" ? "var(--em)" : "rgba(255,255,255,.08)", color: m.role === "user" ? "#000" : "var(--text)", fontSize: 13, fontWeight: m.role === "user" ? 600 : 400 }}>
+                  {m.text}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: "8px 12px", borderTop: "1px solid var(--glass-border)", display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {suggestions.map(s => (
+              <button key={s} onClick={() => send(s)} style={{ background: "rgba(16,185,129,.1)", color: "var(--em)", border: "1px solid rgba(16,185,129,.2)", padding: "4px 10px", borderRadius: 20, fontSize: 11, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>{s}</button>
+            ))}
+          </div>
+          <div style={{ padding: "10px 12px", borderTop: "1px solid var(--glass-border)", display: "flex", gap: 8 }}>
+            <input className="input" placeholder="Ask me anything..." value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} style={{ fontSize: 13, padding: "10px 14px" }} />
+            <button className="btn-primary" style={{ padding: "10px 14px", fontSize: 13 }} onClick={() => send()}>→</button>
+          </div>
+        </div>
+      )}
+      <button onClick={() => setOpen(!open)} style={{ background: "linear-gradient(135deg,var(--em),#059669)", border: "none", borderRadius: 50, width: 48, height: 48, cursor: "pointer", fontSize: 22, boxShadow: "var(--neon)", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform .3s" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+        {open ? "✕" : "🤖"}
+      </button>
+    </div>
+  );
+}
 
-// ── Tips ──
-const tipsEn=['KRA late filing penalty is Ksh 2,000 or 5% of tax due — file before June 30!','You must file KRA returns even if you have no income (Nil Returns).','SHA registration is mandatory for all Kenyans — ensure your family is covered.','NTSA Smart DL is required for all drivers. Renew before expiry to avoid fines.','eCitizen is used for passports, good conduct certificates, birth certificates & more.','Business name registration must be renewed every year on eCitizen.'];
-const tipsSw=['Faini ya KRA ya kuchelewa ni Ksh 2,000 — wasilisha kabla ya Juni 30!','Lazima ufanye KRA returns hata kama huna mapato (Nil Returns).','Usajili wa SHA ni lazima kwa Wakenya wote — hakikisha familia yako inalindwa.','Smart DL ya NTSA inahitajika kwa madereva wote. Fanya upya kabla haijisha.','eCitizen hutumiwa kupata pasipoti, cheti cha tabia njema, cheti cha kuzaliwa & zaidi.','Jina la biashara lazima lihuishwe kila mwaka kwenye eCitizen.'];
-let tipIdx=0;function rotateTip(){document.getElementById('tipEn').innerText=tipsEn[tipIdx%tipsEn.length];document.getElementById('tipSw').innerText=tipsSw[tipIdx%tipsSw.length];tipIdx++;}rotateTip();setInterval(rotateTip,8000);
+function ScrollProgress() {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const el = document.documentElement;
+      setProgress((el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, zIndex: 200 }}>
+      <div style={{ height: "100%", background: "linear-gradient(90deg,var(--em),#34d399)", width: `${progress}%`, transition: "width .1s" }} />
+    </div>
+  );
+}
 
-// ── Language ──
-let lang='en';
-document.getElementById('langToggle').addEventListener('click',()=>{lang=lang==='en'?'sw':'en';const other=lang==='en'?'sw':'en';document.querySelectorAll('.'+lang).forEach(e=>e.style.display='');document.querySelectorAll('.'+other).forEach(e=>e.style.display='none');document.getElementById('langToggle').innerText=lang==='en'?'🇰🇪 SW':'🇬🇧 EN';});
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+export default function App() {
+  injectStyles();
 
-// ── Theme ──
-document.getElementById('themeToggle').addEventListener('click',()=>{const d=document.documentElement.getAttribute('data-theme')==='dark';document.documentElement.setAttribute('data-theme',d?'light':'dark');document.getElementById('themeToggle').innerText=d?'🌙':'☀️';});
+  const [page, setPage] = useState("home");
+  const [profile, setProfile] = useState(ls.get("oa_profile"));
+  const [requests, setRequests] = useState(ls.get("oa_requests") || []);
+  const [role, setRole] = useState(ls.get("oa_role") || "guest");
+  const [nightMode, setNightMode] = useState(getNightMode());
+  const { toasts, show: showToast } = useToast();
+  const season = getSeason();
 
-// ── Font size ──
-let fontSize=15;function changeFontSize(d){fontSize=Math.min(20,Math.max(12,fontSize+d));document.documentElement.style.setProperty('--font-size-base',fontSize+'px');}
+  useEffect(() => {
+    const t = setInterval(() => setNightMode(getNightMode()), 60000);
+    return () => clearInterval(t);
+  }, []);
 
-// ── Service accordion ──
-function toggleService(c){const a=c.classList.contains('active');document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));if(!a)c.classList.add('active');}
+  // URL-based super admin
+  useEffect(() => {
+    if (window.location.search.includes("mode=super")) setPage("superadmin-prompt");
+  }, []);
 
-// ── Quiz ──
-let quizPath=[];
-function quizAnswer(step,choice){quizPath.push(choice);if(step===0){if(choice===0){document.getElementById('qStep0').classList.remove('active');document.getElementById('qStep1').classList.add('active');}else if(choice===1){quizResult('eCitizen Services','You need eCitizen help — account recovery, new registration or portal assistance.');}else if(choice===2){quizResult('SHA Services','You need SHA registration or to update your social health coverage.');}else if(choice===3){quizResult('NTSA Services','You need NTSA help — Smart DL, vehicle transfer, TIMs or inspection booking.');}else if(choice===4){quizResult('Business Name Registration','You need business name search and registration. Bring 3 proposed names, your ID and KRA PIN.');}}}
-function quizResult(title,desc){document.querySelectorAll('.quiz-step').forEach(e=>e.classList.remove('active'));const r=document.getElementById('quizResult');r.style.display='block';document.getElementById('quizResultTitle').innerText='✅ '+title;document.getElementById('quizResultDesc').innerText=desc;}
-function quizRestart(){quizPath=[];document.getElementById('quizResult').style.display='none';document.querySelectorAll('.quiz-step').forEach((e,i)=>{e.classList.toggle('active',i===0);});}
+  const classes = [nightMode ? "night" : "", season !== "normal" ? season : ""].filter(Boolean).join(" ");
 
-// ── Booking slots ──
-const allSlots=['8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'];
-const bookedSlots=['9:00 AM','10:30 AM','2:00 PM'];
-let selectedSlot='';
-function buildSlots(){const g=document.getElementById('slotsGrid');g.innerHTML='';allSlots.forEach(s=>{const b=document.createElement('button');b.className='slot-btn'+(bookedSlots.includes(s)?' booked':'');b.innerText=s;b.disabled=bookedSlots.includes(s);if(!bookedSlots.includes(s))b.onclick=()=>selectSlot(s,b);g.appendChild(b);});}
-function selectSlot(s,btn){selectedSlot=s;document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');document.getElementById('slotConfirmBtn').style.display='block';}
-function confirmSlot(){if(!selectedSlot)return;const name=document.getElementById('clientName').value.trim()||'Client';const service=document.getElementById('serviceSelect').value;const msg=`Hello! I'd like to book a time slot.\nName: *${name}*\nService: *${service}*\nSlot: *${selectedSlot}*\nPlease confirm. Thank you.`;window.open(`https://wa.me/254100733790?text=${encodeURIComponent(msg)}`,'_blank');const c=document.getElementById('slotConfirmed');c.style.display='block';c.innerHTML=`✅ Slot <strong>${selectedSlot}</strong> requested! Check WhatsApp for confirmation.`;document.getElementById('slotConfirmBtn').style.display='none';}
-buildSlots();
+  const renderPage = () => {
+    switch (page) {
+      case "home": return <HeroSection setPage={setPage} profile={profile} nightMode={nightMode} />;
+      case "services": return <ServicesSection requests={requests} setRequests={setRequests} profile={profile} setProfile={setProfile} setPage={setPage} showToast={showToast} />;
+      case "tracker": return <TrackerPage requests={requests} setRequests={setRequests} showToast={showToast} />;
+      case "admin": return <AdminPage requests={requests} setRequests={setRequests} role={role} setRole={setRole} showToast={showToast} />;
+      case "superadmin-prompt": return <SuperAdminPrompt setPage={setPage} setRole={setRole} showToast={showToast} />;
+      default: return <HeroSection setPage={setPage} profile={profile} nightMode={nightMode} />;
+    }
+  };
 
-// ── Order & WhatsApp ──
-let currentRef='';window._orders={};
-function generateOrder(){const name=document.getElementById('clientName').value.trim();const service=document.getElementById('serviceSelect').value;const ref='CSA-'+Math.floor(1000+Math.random()*9000);currentRef=ref;if(name)document.getElementById('demoName').innerText=name;document.getElementById('demoService').innerText=service;document.getElementById('demoRef').innerText='Ref: '+ref;document.getElementById('orderRefCode').innerText=ref;document.getElementById('orderRef').style.display='block';window._orders[ref]={name:name||'Client',service,status:'In Progress',time:new Date().toLocaleTimeString()};}
-document.getElementById('whatsappBtn').addEventListener('click',()=>{const name=document.getElementById('clientName').value.trim()||'Client';const service=document.getElementById('serviceSelect').value;const ref=currentRef||'(generate ref first)';const notes=document.getElementById('clientNotes').value.trim();const msg=`Hello! My name is *${name}*.\nService: *${service}*\nRef: *${ref}*${notes?'\nNotes: '+notes:''}\nPlease assist. Thank you.`;window.open(`https://wa.me/254100733790?text=${encodeURIComponent(msg)}`,'_blank');});
+  return (
+    <div className={classes} style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <ScrollProgress />
+      <Navbar page={page} setPage={setPage} role={role} nightMode={nightMode} />
+      <main className="page-section">
+        {renderPage()}
+      </main>
 
-// ── File upload preview ──
-function previewFile(input){if(!input.files||!input.files[0])return;const r=new FileReader();r.onload=e=>{document.getElementById('uploadImg').src=e.target.result;document.getElementById('uploadPreview').style.display='block';document.getElementById('uploadPrompt').style.display='none';};r.readAsDataURL(input.files[0]);}
+      {/* Footer */}
+      <footer style={{ borderTop: "1px solid var(--glass-border)", padding: "32px 24px", background: "var(--bg2)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 800, fontSize: 20, marginBottom: 4 }}>
+              <span style={{ color: "var(--em)" }}>Online</span> Agency
+            </div>
+            <div style={{ color: "var(--text2)", fontSize: 13 }}>Kenya's trusted digital government services platform</div>
+          </div>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            {["home", "services", "tracker"].map(p => (
+              <button key={p} onClick={() => setPage(p)} style={{ background: "none", border: "none", color: "var(--text2)", cursor: "pointer", fontSize: 14, fontFamily: "'Outfit',sans-serif", textTransform: "capitalize" }}
+                onMouseEnter={e => e.currentTarget.style.color = "var(--em)"} onMouseLeave={e => e.currentTarget.style.color = "var(--text2)"}>
+                {p}
+              </button>
+            ))}
+          </div>
+          <div style={{ color: "var(--text3)", fontSize: 12 }}>© 2024 Online Agency · {BUSINESS_EMAIL}</div>
+        </div>
+      </footer>
 
-// ── Status Tracker ──
-function checkStatus(){const code=document.getElementById('trackerInput').value.trim().toUpperCase();const res=document.getElementById('trackerResult');res.style.display='block';const o=window._orders[code];if(o){res.className='tracker-result found';res.innerHTML=`✅ <strong>${code}</strong> found!<br>Client: ${o.name}<br>Service: ${o.service}<br>Status: <strong>${o.status}</strong><br>Time: ${o.time}`;}else if(/^CSA-\d{4}$/.test(code)){res.className='tracker-result found';res.innerHTML=`✅ <strong>${code}</strong> — Status: <strong>In Progress</strong><br>Agent is handling your request. You'll be notified via WhatsApp.`;}else{res.className='tracker-result not-found';res.innerHTML='❌ Code not found. Please check and try again or contact us on WhatsApp.';}}
-document.getElementById('trackerInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkStatus();});
-
-// ── FAQ ──
-function toggleFaq(el){const answers=el.parentElement.querySelectorAll('.faq-answer');answers.forEach(a=>{a.style.display=a.style.display==='block'?'none':'block';});}
-
-// ── Checklist ──
-function toggleEl(id,arrowId){const c=document.getElementById(id);c.style.display=c.style.display==='none'?'block':'none';}
-
-// ── Notification opt-in ──
-function notifOptIn(){const msg=`Hello! Please add me to the KRA deadline reminder list. I want to be notified before June 30, 2026.`;window.open(`https://wa.me/254100733790?text=${encodeURIComponent(msg)}`,'_blank');}
-
-// ── Share ──
-function shareWA(){window.open('https://wa.me/?text='+encodeURIComponent('Check out this great cyber services agency for KRA, eCitizen, SHA & NTSA help! '+window.location.href),'_blank');}
-function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>alert('Link copied!')).catch(()=>alert('Copy failed.'));}
-function nativeShare(){if(navigator.share){navigator.share({title:'Online Cyber Services Agency',text:'Fast KRA, eCitizen, SHA & NTSA assistance!',url:window.location.href});}else{copyLink();}}
-
-// ── Maps ──
-function openMaps(){window.open('https://maps.google.com/?q=Nairobi+Kenya','_blank');}
-
-// ── Admin ──
-const ADMIN_PASS='admin123';let adminLoggedIn=false;
-function adminLogin(){if(document.getElementById('adminPass').value===ADMIN_PASS){adminLoggedIn=true;document.getElementById('adminLoginSection').style.display='none';document.getElementById('adminContent').style.display='block';renderAdminOrders();}else{alert('Incorrect password.');}}
-function adminLogout(){adminLoggedIn=false;document.getElementById('adminLoginSection').style.display='block';document.getElementById('adminContent').style.display='none';document.getElementById('adminOverlay').classList.remove('open');}
-function renderAdminOrders(){const c=document.getElementById('adminOrders');const keys=Object.keys(window._orders);if(!keys.length){c.innerHTML='<div class="admin-empty">No orders this session yet.</div>';return;}c.innerHTML=keys.map(k=>{const o=window._orders[k];return`<div class="admin-order-row"><strong>${k}</strong> — ${o.name}<br>${o.service}<br><small>${o.time}</small><br><select class="admin-status-select" onchange="updateStatus('${k}',this.value)"><option ${o.status==='In Progress'?'selected':''}>In Progress</option><option ${o.status==='Done'?'selected':''}>Done</option><option ${o.status==='Pending Payment'?'selected':''}>Pending Payment</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></div>`;}).join('');}
-function updateStatus(ref,status){if(window._orders[ref])window._orders[ref].status=status;}
-
-// ── Chat bubble (10s delay) ──
-setTimeout(()=>{const b=document.getElementById('chatBubble');b.style.display='block';},10000);
-
-// ── Offline detection ──
-function checkOnline(){document.getElementById('offlineBanner').style.display=navigator.onLine?'none':'block';}
-window.addEventListener('online',checkOnline);window.addEventListener('offline',checkOnline);checkOnline();
-
-// ── Service Worker for offline ──
-if('serviceWorker' in navigator){const swCode=`self.addEventListener('install',e=>{e.waitUntil(caches.open('csa-v1').then(c=>c.addAll(['/'])));});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`;const blob=new Blob([swCode],{type:'application/javascript'});const url=URL.createObjectURL(blob);navigator.serviceWorker.register(url).catch(()=>{});}
-</script>
-</body>
-</html>
+      <WaFloat />
+      <Chatbot showToast={showToast} />
+      <ToastContainer toasts={toasts} />
+    </div>
+  );
+}
